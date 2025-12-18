@@ -7,7 +7,6 @@ aniso8601==10.0.1
 annotated-types==0.6.0
 anyio==4.3.0
 apispec==6.8.1
-apturl
 argcomplete==3.1.2
 asgiref==3.8.1
 asttokens==3.0.0
