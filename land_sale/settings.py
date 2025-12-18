@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-p@s1ny5h(1dxnud@n3z=bn7j*l_6qrnno+@)=1jt-)^_8q*yuy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['landsale-production.up.railway.app']
+ALLOWED_HOSTS = ['landsale-production.up.railway.app','127.0.0.1']
 
 
 # Application definition
@@ -39,7 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'land',
+    'drf_spectacular',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

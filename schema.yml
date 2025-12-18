@@ -1,0 +1,441 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /land/create_booking/:
+    get:
+      operationId: land_create_booking_retrieve
+      tags:
+      - land
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    post:
+      operationId: land_create_booking_create
+      tags:
+      - land
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /land/create_project/:
+    get:
+      operationId: land_create_project_retrieve
+      tags:
+      - land
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    post:
+      operationId: land_create_project_create
+      tags:
+      - land
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /land/plots/:
+    get:
+      operationId: land_plots_retrieve
+      tags:
+      - land
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plots'
+          description: ''
+    post:
+      operationId: land_plots_create
+      tags:
+      - land
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Plots'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Plots'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Plots'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plots'
+          description: ''
+components:
+  schemas:
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        customer_name:
+          type: string
+          maxLength: 200
+        customer_contact:
+          type: string
+          maxLength: 100
+        booking_date:
+          type: string
+          format: date-time
+          readOnly: true
+        payment_reference:
+          type: string
+          maxLength: 100
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        plot:
+          type: integer
+      required:
+      - amount_paid
+      - booking_date
+      - customer_contact
+      - customer_name
+      - id
+      - payment_method
+      - payment_reference
+      - plot
+      - status
+    PaymentMethodEnum:
+      enum:
+      - cash
+      - mpesa
+      - bank_transfer
+      type: string
+      description: |-
+        * `cash` - Cash
+        * `mpesa` - mpesa
+        * `bank_transfer` - Bank Transfer
+    Plots:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        plot_number:
+          type: string
+          maxLength: 50
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        is_available:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        project:
+          type: integer
+      required:
+      - created_at
+      - id
+      - plot_number
+      - price
+      - project
+      - size
+      - updated_at
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phase:
+          type: string
+          maxLength: 100
+        project_svg_map:
+          type: string
+          format: uri
+        location:
+          type: string
+          maxLength: 300
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - location
+      - name
+      - phase
+      - price
+      - project_svg_map
+      - property_type
+      - size
+      - updated_at
+    PropertyTypeEnum:
+      enum:
+      - commercial
+      - residential
+      type: string
+      description: |-
+        * `commercial` - Commercial
+        * `residential` - Residential
+    StatusEnum:
+      enum:
+      - booked
+      - confirmed
+      - cancelled
+      type: string
+      description: |-
+        * `booked` - Booked
+        * `confirmed` - Confirmed
+        * `cancelled` - Cancelled
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

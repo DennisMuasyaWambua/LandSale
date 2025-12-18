@@ -2,19 +2,49 @@ from django.shortcuts import render
 from rest_framework.views import APIView 
 from rest_framework.response import  Response
 
-from land.models import Land
-from land.serializers import LandSerializer
+from land.models import Project, Booking, Plots
+from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializer
 # Create your views here.
-class LandView(APIView):
+class ProjectView(APIView):
+    serializer_class = ProjectSerializer
+    
     def post(self, request):
         data = request.data
-        serializer = LandSerializer(data=data)
+        serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
             
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     def get(self, request):
-        lands = Land.objects.all()
-        serializer = LandSerializer(lands, many=True)
+        project = Project.objects.all()
+        serializer =    ProjectSerializer(project, many=True)
         return Response(serializer.data, status=200)
+class BookingView(APIView):
+      serializer_class = BookingSerializer
+      
+      def post(self, request):
+            data = request.data
+            serializer = BookingSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
+      def get(self, request):
+            bookings = Booking.objects.all()
+            serializer = BookingSerializer(bookings, many=True)
+            return Response(serializer.data, status=200)
+class PlotsView(APIView):
+      serializer_class = PlotsSerializer
+      
+      def get(self, request):
+            plots = Plots.objects.all()
+            serializer = PlotsSerializer(plots, many=True)
+            return Response(serializer.data, status=200)
+      def post(self, request):
+            data = request.data
+            serializer = PlotsSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
