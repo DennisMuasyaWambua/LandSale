@@ -63,6 +63,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3006"
 ]
 
 ROOT_URLCONF = 'land_sale.urls'
