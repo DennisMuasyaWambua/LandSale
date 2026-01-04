@@ -4,7 +4,7 @@ from django.db import models
 class Project(models.Model):
     name = models.CharField(max_length=200)
     phase = models.CharField(max_length=100)
-    project_svg_map = models.FileField(upload_to='project_maps/')
+    project_svg_map = models.FileField(upload_to='project_maps/', null=True, blank=True)
     location = models.CharField(max_length=300)
     size = models.DecimalField(max_digits=10, decimal_places=2)
     property_type = models.CharField(max_length=100,choices=[('commercial','Commercial'),('residential','Residential')])
