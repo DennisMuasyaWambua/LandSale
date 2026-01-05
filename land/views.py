@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from rest_framework.views import APIView 
-from rest_framework.response import  Response
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
 from land.models import Project, Booking, Plots
 from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializer
 # Create your views here.
 class ProjectView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = ProjectSerializer
     
     def post(self, request):
@@ -21,6 +23,7 @@ class ProjectView(APIView):
         serializer =    ProjectSerializer(project, many=True)
         return Response(serializer.data, status=200)
 class BookingView(APIView):
+      permission_classes = [AllowAny]
       serializer_class = BookingSerializer
       
       def post(self, request):
@@ -35,6 +38,7 @@ class BookingView(APIView):
             serializer = BookingSerializer(bookings, many=True)
             return Response(serializer.data, status=200)
 class PlotsView(APIView):
+      permission_classes = [AllowAny]
       serializer_class = PlotsSerializer
       
       def get(self, request):

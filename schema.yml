@@ -126,8 +126,7 @@ paths:
       tags:
       - api
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -149,14 +148,192 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Login user and get JWT tokens
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+            examples:
+              UserLoginExample:
+                value:
+                  username: john_doe
+                  password: secure_password123
+                summary: User Login Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                UserLoginExample:
+                  value:
+                    username: john_doe
+                    password: secure_password123
+                  summary: User Login Example
+          description: ''
+  /auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Get current user profile information
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Register a new user account
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+            examples:
+              UserRegistrationExample:
+                value:
+                  username: john_doe
+                  email: john@example.com
+                  first_name: John
+                  last_name: Doe
+                  password: secure_password123
+                  password_confirm: secure_password123
+                summary: User Registration Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                UserRegistrationExample:
+                  value:
+                    username: john_doe
+                    email: john@example.com
+                    first_name: John
+                    last_name: Doe
+                    password: secure_password123
+                    password_confirm: secure_password123
+                  summary: User Registration Example
+          description: ''
+  /dashboard/bookings/:
+    get:
+      operationId: dashboard_bookings_retrieve
+      description: Get all bookings for dashboard management
+      summary: Dashboard Bookings
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /dashboard/projects/:
+    get:
+      operationId: dashboard_projects_retrieve
+      description: Get all projects with plot statistics for dashboard
+      summary: Dashboard Projects
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /dashboard/recent-activity/:
+    get:
+      operationId: dashboard_recent_activity_retrieve
+      description: Get recent bookings and projects activity for dashboard
+      summary: Dashboard Recent Activity
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /dashboard/stats/:
+    get:
+      operationId: dashboard_stats_retrieve
+      description: Get dashboard statistics including total projects, plots, bookings
+        and revenue
+      summary: Dashboard Statistics
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /land/create_booking/:
     get:
       operationId: land_create_booking_retrieve
       tags:
       - land
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -182,8 +359,7 @@ paths:
               $ref: '#/components/schemas/Booking'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -198,8 +374,7 @@ paths:
       tags:
       - land
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -225,8 +400,7 @@ paths:
               $ref: '#/components/schemas/Project'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -241,8 +415,7 @@ paths:
       tags:
       - land
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -268,8 +441,7 @@ paths:
               $ref: '#/components/schemas/Plots'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -381,6 +553,7 @@ components:
         project_svg_map:
           type: string
           format: uri
+          nullable: true
         location:
           type: string
           maxLength: 300
@@ -409,7 +582,6 @@ components:
       - name
       - phase
       - price
-      - project_svg_map
       - property_type
       - size
       - updated_at
@@ -431,11 +603,96 @@ components:
         * `booked` - Booked
         * `confirmed` - Confirmed
         * `cancelled` - Cancelled
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - id
+      - username
+    UserLogin:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+      - password
+      - username
+    UserRegistration:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - password_confirm
+      - username
   securitySchemes:
-    basicAuth:
+    jwtAuth:
       type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: sessionid
+      scheme: bearer
+      bearerFormat: JWT
