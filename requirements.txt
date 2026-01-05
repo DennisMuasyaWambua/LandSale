@@ -8,4 +8,5 @@ sqlparse==0.5.4
 typing_extensions==4.15.0
 drf-spectacular
 django-cors-headers
+setuptools>=40.0
 
