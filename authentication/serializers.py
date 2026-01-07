@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from .models import PasswordReset
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -48,3 +49,36 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined']
         read_only_fields = ['id', 'date_joined']
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+            if not user.is_active:
+                raise serializers.ValidationError("User account is disabled")
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user found with this email address")
+        return value
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.UUIDField()
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError("Password fields didn't match.")
+        
+        try:
+            reset = PasswordReset.objects.get(token=attrs['token'])
+            if not reset.is_valid():
+                raise serializers.ValidationError("Reset token has expired or been used")
+            attrs['reset'] = reset
+        except PasswordReset.DoesNotExist:
+            raise serializers.ValidationError("Invalid reset token")
+        
+        return attrs

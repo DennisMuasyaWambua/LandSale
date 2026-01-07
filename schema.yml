@@ -278,6 +278,66 @@ paths:
                     password_confirm: secure_password123
                   summary: User Registration Example
           description: ''
+  /auth/forgot-password/:
+    post:
+      operationId: auth_forgot_password_create
+      description: Send password reset email to user
+      summary: Forgot Password
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+            examples:
+              ForgotPasswordExample:
+                value:
+                  email: john@example.com
+                summary: Forgot Password Example
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: ''
+      security: []
+  /auth/reset-password/:
+    post:
+      operationId: auth_reset_password_create
+      description: Reset user password using token
+      summary: Reset Password
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+            examples:
+              ResetPasswordExample:
+                value:
+                  token: 123e4567-e89b-12d3-a456-426614174000
+                  password: new_secure_password123
+                  password_confirm: new_secure_password123
+                summary: Reset Password Example
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: ''
+      security: []
   /dashboard/bookings/:
     get:
       operationId: dashboard_bookings_retrieve
@@ -692,6 +752,36 @@ components:
       - password
       - password_confirm
       - username
+    ForgotPassword:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+      required:
+      - email
+    ResetPassword:
+      type: object
+      properties:
+        token:
+          type: string
+          format: uuid
+          title: Reset token
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          title: New password
+        password_confirm:
+          type: string
+          writeOnly: true
+          title: Confirm new password
+      required:
+      - password
+      - password_confirm
+      - token
   securitySchemes:
     jwtAuth:
       type: http
