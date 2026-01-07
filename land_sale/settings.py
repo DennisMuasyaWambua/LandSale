@@ -73,7 +73,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:3006"
+    "http://localhost:3006",
+    "https://map-details.vercel.app"
 ]
 
 ROOT_URLCONF = 'land_sale.urls'
