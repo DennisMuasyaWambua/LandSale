@@ -9,4 +9,6 @@ typing_extensions==4.15.0
 drf-spectacular
 django-cors-headers
 setuptools>=40.0
-
+dj-database-url
+psycopg2-binary
+python-dotenv
