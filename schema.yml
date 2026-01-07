@@ -548,8 +548,10 @@ components:
           type: string
           maxLength: 200
         phase:
-          type: string
-          maxLength: 100
+          type: array
+          items:
+            type: string
+            maxLength: 100
         project_svg_map:
           type: string
           format: uri
@@ -561,12 +563,6 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
-        property_type:
-          $ref: '#/components/schemas/PropertyTypeEnum'
-        price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         created_at:
           type: string
           format: date-time
@@ -580,9 +576,6 @@ components:
       - id
       - location
       - name
-      - phase
-      - price
-      - property_type
       - size
       - updated_at
     PropertyTypeEnum:
