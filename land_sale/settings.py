@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'authentication.middleware.SubscriptionRequiredMiddleware',  # Subscription enforcement
 ]
 
 
@@ -171,3 +172,20 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+# Pesapal API 3.0 Configuration
+PESAPAL_CONSUMER_KEY = os.environ.get('PESAPAL_CONSUMER_KEY', '')
+PESAPAL_CONSUMER_SECRET = os.environ.get('PESAPAL_CONSUMER_SECRET', '')
+PESAPAL_ENVIRONMENT = os.environ.get('PESAPAL_ENVIRONMENT', 'sandbox')  # 'sandbox' or 'live'
+PESAPAL_IPN_ID = os.environ.get('PESAPAL_IPN_ID', '')  # Registered IPN ID
+PESAPAL_CALLBACK_URL = os.environ.get('PESAPAL_CALLBACK_URL', 'http://localhost:3000/payment/callback')
+PESAPAL_CURRENCY = os.environ.get('PESAPAL_CURRENCY', 'KES')
+
+# Pesapal API endpoints
+PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3/api' if PESAPAL_ENVIRONMENT == 'sandbox' else 'https://pay.pesapal.com/v3/api'
+
+# Frontend URL for emails
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+
+# Company branding
+COMPANY_LOGO_URL = os.environ.get('COMPANY_LOGO_URL', '')
