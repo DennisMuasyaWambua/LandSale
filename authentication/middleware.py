@@ -24,7 +24,9 @@ class SubscriptionRequiredMiddleware(MiddlewareMixin):
         '/auth/reset-password/',
         '/auth/subscription-plans/',
         '/auth/subscribe/',
-        '/auth/payment/verify/',
+        '/auth/my-subscription/',      # Users need to check subscription status
+        '/auth/subscription/',          # Covers cancel and other subscription endpoints
+        '/auth/payment/',               # Covers verify, history, and all payment endpoints
         '/auth/webhook/',
         '/admin/',
         '/api/docs/',
