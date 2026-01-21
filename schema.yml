@@ -148,6 +148,172 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /auth/admin/subscription-plans/:
+    post:
+      operationId: auth_admin_subscription_plans_create
+      description: Create a new subscription plan (Admin only)
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+  /auth/admin/subscription-plans/{plan_id}/:
+    put:
+      operationId: auth_admin_subscription_plans_update
+      description: Update a subscription plan (Admin only)
+      parameters:
+      - in: path
+        name: plan_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+    patch:
+      operationId: auth_admin_subscription_plans_partial_update
+      description: Update a subscription plan (Admin only)
+      parameters:
+      - in: path
+        name: plan_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+  /auth/admin/subscription-plans/{plan_id}/delete/:
+    delete:
+      operationId: auth_admin_subscription_plans_delete_destroy
+      description: Delete a subscription plan (Admin only)
+      parameters:
+      - in: path
+        name: plan_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /auth/admin/subscription-plans/list/:
+    get:
+      operationId: auth_admin_subscription_plans_list_list
+      description: List all subscription plans (Admin only)
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+  /auth/forgot-password/:
+    post:
+      operationId: auth_forgot_password_create
+      description: Send password reset email to user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+            examples:
+              ForgotPasswordExample:
+                value:
+                  email: john@example.com
+                summary: Forgot Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                ForgotPasswordExample:
+                  value:
+                    email: john@example.com
+                  summary: Forgot Password Example
+          description: ''
   /auth/login/:
     post:
       operationId: auth_login_create
@@ -187,6 +353,59 @@ paths:
                     username: john_doe
                     password: secure_password123
                   summary: User Login Example
+          description: ''
+  /auth/my-subscription/:
+    get:
+      operationId: auth_my_subscription_retrieve
+      description: Get current user's subscription status
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscription'
+          description: ''
+  /auth/payment/history/:
+    get:
+      operationId: auth_payment_history_list
+      description: Get current user's payment history
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+          description: ''
+  /auth/payment/verify/{order_tracking_id}/:
+    get:
+      operationId: auth_payment_verify_retrieve
+      description: Verify payment status with Pesapal
+      parameters:
+      - in: path
+        name: order_tracking_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
           description: ''
   /auth/profile/:
     get:
@@ -278,40 +497,10 @@ paths:
                     password_confirm: secure_password123
                   summary: User Registration Example
           description: ''
-  /auth/forgot-password/:
-    post:
-      operationId: auth_forgot_password_create
-      description: Send password reset email to user
-      summary: Forgot Password
-      tags:
-      - auth
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ForgotPassword'
-            examples:
-              ForgotPasswordExample:
-                value:
-                  email: john@example.com
-                summary: Forgot Password Example
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-          description: ''
-      security: []
   /auth/reset-password/:
     post:
       operationId: auth_reset_password_create
       description: Reset user password using token
-      summary: Reset Password
       tags:
       - auth
       requestBody:
@@ -326,7 +515,16 @@ paths:
                   password: new_secure_password123
                   password_confirm: new_secure_password123
                 summary: Reset Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
         required: true
+      security:
+      - jwtAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -336,8 +534,112 @@ paths:
                 properties:
                   message:
                     type: string
+              examples:
+                ResetPasswordExample:
+                  value:
+                    token: 123e4567-e89b-12d3-a456-426614174000
+                    password: new_secure_password123
+                    password_confirm: new_secure_password123
+                  summary: Reset Password Example
           description: ''
-      security: []
+  /auth/subscribe/:
+    post:
+      operationId: auth_subscribe_create
+      description: Initialize subscription payment with Pesapal
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscribe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Subscribe'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Subscribe'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /auth/subscription-plans/:
+    get:
+      operationId: auth_subscription_plans_list
+      description: List all active subscription plans
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+  /auth/subscription-plans/{plan_id}/:
+    get:
+      operationId: auth_subscription_plans_retrieve
+      description: Get details of a specific subscription plan
+      parameters:
+      - in: path
+        name: plan_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+          description: ''
+  /auth/subscription/cancel/:
+    post:
+      operationId: auth_subscription_cancel_create
+      description: Cancel current user's subscription
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /auth/webhook/pesapal/:
+    get:
+      operationId: auth_webhook_pesapal_retrieve
+      description: Pesapal IPN webhook for payment notifications
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
   /dashboard/bookings/:
     get:
       operationId: dashboard_bookings_retrieve
@@ -512,6 +814,9 @@ paths:
           description: ''
 components:
   schemas:
+    BlankEnum:
+      enum:
+      - ''
     Booking:
       type: object
       properties:
@@ -538,7 +843,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
       required:
@@ -551,6 +856,145 @@ components:
       - payment_reference
       - plot
       - status
+    BookingStatusEnum:
+      enum:
+      - booked
+      - confirmed
+      - cancelled
+      type: string
+      description: |-
+        * `booked` - Booked
+        * `confirmed` - Confirmed
+        * `cancelled` - Cancelled
+    ForgotPassword:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    NullEnum:
+      enum:
+      - null
+    PatchedSubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        period_count:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Number of periods (e.g., 3 months)
+        is_active:
+          type: boolean
+        features:
+          description: List of features included in this plan
+        duration_in_days:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_details:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        subscription:
+          type: integer
+        plan:
+          type: integer
+          nullable: true
+        plan_details:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionPlan'
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        payment_type:
+          $ref: '#/components/schemas/PaymentTypeEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        pesapal_order_tracking_id:
+          type: string
+          description: Pesapal OrderTrackingId
+          maxLength: 200
+        pesapal_merchant_reference:
+          type: string
+          description: Our internal reference
+          maxLength: 200
+        pesapal_transaction_id:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Pesapal transaction ID after completion
+        payment_method:
+          type: string
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 10
+        is_recurring:
+          type: boolean
+          description: Whether this is a recurring payment setup
+        recurring_frequency:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/RecurringFrequencyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        metadata: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - id
+      - payment_method
+      - pesapal_transaction_id
+      - plan_details
+      - status
+      - subscription
+      - updated_at
+      - user
+      - user_details
     PaymentMethodEnum:
       enum:
       - cash
@@ -561,6 +1005,40 @@ components:
         * `cash` - Cash
         * `mpesa` - mpesa
         * `bank_transfer` - Bank Transfer
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - successful
+      - failed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `successful` - Successful
+        * `failed` - Failed
+        * `cancelled` - Cancelled
+    PaymentTypeEnum:
+      enum:
+      - subscription
+      - renewal
+      type: string
+      description: |-
+        * `subscription` - Subscription
+        * `renewal` - Renewal
+    PeriodEnum:
+      enum:
+      - daily
+      - weekly
+      - monthly
+      - quarterly
+      - yearly
+      type: string
+      description: |-
+        * `daily` - Daily
+        * `weekly` - Weekly
+        * `monthly` - Monthly
+        * `quarterly` - Quarterly
+        * `yearly` - Yearly
     Plots:
       type: object
       properties:
@@ -602,7 +1080,6 @@ components:
       - id
       - plot_number
       - price
-      - property_type
       - project
       - size
       - updated_at
@@ -654,16 +1131,86 @@ components:
       description: |-
         * `commercial` - Commercial
         * `residential` - Residential
-    StatusEnum:
+    RecurringFrequencyEnum:
       enum:
-      - booked
-      - confirmed
-      - cancelled
+      - DAILY
+      - WEEKLY
+      - MONTHLY
+      - YEARLY
       type: string
       description: |-
-        * `booked` - Booked
-        * `confirmed` - Confirmed
-        * `cancelled` - Cancelled
+        * `DAILY` - Daily
+        * `WEEKLY` - Weekly
+        * `MONTHLY` - Monthly
+        * `YEARLY` - Yearly
+    ResetPassword:
+      type: object
+      properties:
+        token:
+          type: string
+          format: uuid
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - password_confirm
+      - token
+    Subscribe:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+      required:
+      - plan_id
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        period_count:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Number of periods (e.g., 3 months)
+        is_active:
+          type: boolean
+        features:
+          description: List of features included in this plan
+        duration_in_days:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - duration_in_days
+      - id
+      - name
+      - updated_at
     TokenRefresh:
       type: object
       properties:
@@ -752,36 +1299,87 @@ components:
       - password
       - password_confirm
       - username
-    ForgotPassword:
+    UserSubscription:
       type: object
       properties:
-        email:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_details:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        plan:
+          type: integer
+          nullable: true
+        plan_details:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionPlan'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/UserSubscriptionStatusEnum'
+          readOnly: true
+        start_date:
           type: string
-          format: email
-          title: Email address
-          maxLength: 254
+          format: date-time
+          readOnly: true
+          nullable: true
+        end_date:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        auto_renew:
+          type: boolean
+        recurring_payment_active:
+          type: boolean
+          readOnly: true
+          description: Whether user has active recurring payment configured at Pesapal
+        last_recurring_payment_date:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_currently_active:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
-      - email
-    ResetPassword:
-      type: object
-      properties:
-        token:
-          type: string
-          format: uuid
-          title: Reset token
-        password:
-          type: string
-          writeOnly: true
-          minLength: 8
-          title: New password
-        password_confirm:
-          type: string
-          writeOnly: true
-          title: Confirm new password
-      required:
-      - password
-      - password_confirm
-      - token
+      - created_at
+      - end_date
+      - id
+      - is_currently_active
+      - last_recurring_payment_date
+      - plan_details
+      - recurring_payment_active
+      - start_date
+      - status
+      - updated_at
+      - user
+      - user_details
+    UserSubscriptionStatusEnum:
+      enum:
+      - pending
+      - active
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `active` - Active
+        * `expired` - Expired
+        * `cancelled` - Cancelled
   securitySchemes:
     jwtAuth:
       type: http
