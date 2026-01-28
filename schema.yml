@@ -1715,11 +1715,6 @@ components:
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         property_type:
           $ref: '#/components/schemas/PropertyTypeEnum'
-        phase:
-          type: array
-          items:
-            type: string
-            maxLength: 100
         is_available:
           type: boolean
         created_at:

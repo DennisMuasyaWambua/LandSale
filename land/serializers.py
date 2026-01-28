@@ -50,7 +50,7 @@ class PlotDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Plots
-        fields = '__all__'
+        exclude = ['phase']
 
 
 class BookingSerializer(serializers.ModelSerializer):
