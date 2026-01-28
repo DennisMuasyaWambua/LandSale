@@ -917,9 +917,12 @@ components:
           readOnly: true
         balance:
           type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
         plot_details:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
         customer_name:
           type: string
@@ -989,9 +992,12 @@ components:
           readOnly: true
         balance:
           type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
         plot_details:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
         customer_name:
           type: string
@@ -1182,6 +1188,52 @@ components:
         * `monthly` - Monthly
         * `quarterly` - Quarterly
         * `yearly` - Yearly
+    PlotDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project:
+          allOf:
+          - $ref: '#/components/schemas/Project'
+          readOnly: true
+        plot_number:
+          type: string
+          maxLength: 50
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        phase:
+          type: array
+          items:
+            type: string
+            maxLength: 100
+        is_available:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - plot_number
+      - price
+      - project
+      - size
+      - updated_at
     Plots:
       type: object
       properties:

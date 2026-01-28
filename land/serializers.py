@@ -43,22 +43,16 @@ class PlotDetailSerializer(serializers.ModelSerializer):
 
 
 class BookingSerializer(serializers.ModelSerializer):
-    balance = serializers.SerializerMethodField()
-    plot_details = serializers.SerializerMethodField()
+    balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    plot_details = PlotDetailSerializer(source='plot', read_only=True)
 
     class Meta:
         model = Booking
         fields = '__all__'
 
-    def get_balance(self, obj):
-        return obj.purchase_price - obj.amount_paid
-
-    def get_plot_details(self, obj):
-        return PlotDetailSerializer(obj.plot).data
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['plot_details'] = self.get_plot_details(instance)
+        representation['balance'] = instance.purchase_price - instance.amount_paid
         return representation
 
     def validate(self, attrs):
