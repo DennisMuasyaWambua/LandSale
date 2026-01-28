@@ -35,10 +35,15 @@ class PlotsSerializer(serializers.ModelSerializer):
         return value
 
 class BookingSerializer(serializers.ModelSerializer):
+    balance = serializers.SerializerMethodField()
+
     class Meta:
         model = Booking
         fields = '__all__'
-    
+
+    def get_balance(self, obj):
+        return obj.purchase_price - obj.amount_paid
+
     def validate(self, attrs):
         plot = attrs.get('plot')
         if not plot:
@@ -46,8 +51,13 @@ class BookingSerializer(serializers.ModelSerializer):
                 "plot": "Please select a valid plot from the available plots."
             })
         return attrs
-    
+
     def validate_amount_paid(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Amount paid cannot be negative.")
+        return value
+
+    def validate_purchase_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Amount paid must be greater than 0.")
+            raise serializers.ValidationError("Purchase price must be greater than 0.")
         return value

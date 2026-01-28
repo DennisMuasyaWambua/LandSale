@@ -657,10 +657,31 @@ paths:
                 $ref: '#/components/schemas/Booking'
           description: ''
   /dashboard/bookings/{booking_id}/:
+    get:
+      operationId: dashboard_bookings_retrieve_2
+      description: Get booking details by booking ID including balance calculation
+      summary: Get Single Booking
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
     put:
       operationId: dashboard_bookings_update
-      description: Fully update booking details by booking ID
-      summary: Full Update Booking
+      description: Fully update booking details by booking ID (all fields required)
+      summary: Update Booking (Full)
       parameters:
       - in: path
         name: booking_id
@@ -692,8 +713,9 @@ paths:
           description: ''
     patch:
       operationId: dashboard_bookings_partial_update
-      description: Update booking details by booking ID
-      summary: Update Booking
+      description: Update booking details by booking ID (partial update - only provided
+        fields will be updated)
+      summary: Update Booking (Partial)
       parameters:
       - in: path
         name: booking_id
@@ -893,6 +915,9 @@ components:
         id:
           type: integer
           readOnly: true
+        balance:
+          type: string
+          readOnly: true
         customer_name:
           type: string
           maxLength: 200
@@ -908,6 +933,10 @@ components:
           maxLength: 100
         payment_method:
           $ref: '#/components/schemas/PaymentMethodEnum'
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         amount_paid:
           type: string
           format: decimal
@@ -918,6 +947,7 @@ components:
           type: integer
       required:
       - amount_paid
+      - balance
       - booking_date
       - customer_contact
       - customer_name
@@ -953,6 +983,9 @@ components:
         id:
           type: integer
           readOnly: true
+        balance:
+          type: string
+          readOnly: true
         customer_name:
           type: string
           maxLength: 200
@@ -968,6 +1001,10 @@ components:
           maxLength: 100
         payment_method:
           $ref: '#/components/schemas/PaymentMethodEnum'
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         amount_paid:
           type: string
           format: decimal

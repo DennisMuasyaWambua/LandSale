@@ -29,5 +29,6 @@ class Booking(models.Model):
     booking_date = models.DateTimeField(auto_now_add=True)
     payment_reference = models.CharField(max_length=100)
     payment_method = models.CharField(max_length=100,choices=[('cash','Cash'),('mpesa','mpesa'),('bank_transfer','Bank Transfer')])
+    purchase_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=15, decimal_places=2)
     status = models.CharField(max_length=50,choices=[('booked','Booked'),('confirmed','Confirmed'),('cancelled','Cancelled')])

@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Sum
 from drf_spectacular.utils import extend_schema
 from land.models import Project, Booking, Plots
@@ -9,8 +8,6 @@ from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializ
 
 
 class DashboardStatsView(APIView):
-    permission_classes = [IsAuthenticated]
-    
     @extend_schema(
         description="Get dashboard statistics including total projects, plots, bookings and revenue",
         summary="Dashboard Statistics"
@@ -33,8 +30,6 @@ class DashboardStatsView(APIView):
 
 
 class DashboardProjectsView(APIView):
-    permission_classes = [IsAuthenticated]
-    
     @extend_schema(
         description="Get all projects with plot statistics for dashboard",
         summary="Dashboard Projects"
@@ -61,7 +56,6 @@ class DashboardProjectsView(APIView):
 
 
 class DashboardBookingsView(APIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = BookingSerializer
 
     @extend_schema(
@@ -75,8 +69,6 @@ class DashboardBookingsView(APIView):
 
 
 class DashboardRecentActivityView(APIView):
-    permission_classes = [IsAuthenticated]
-
     @extend_schema(
         description="Get recent bookings and projects activity for dashboard",
         summary="Dashboard Recent Activity"
@@ -93,12 +85,30 @@ class DashboardRecentActivityView(APIView):
 
 
 class DashboardUpdateBookingView(APIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = BookingSerializer
 
     @extend_schema(
-        description="Update booking details by booking ID",
-        summary="Update Booking"
+        responses={200: BookingSerializer},
+        description="Get booking details by booking ID including balance calculation",
+        summary="Get Single Booking"
+    )
+    def get(self, request, booking_id):
+        try:
+            booking = Booking.objects.select_related('plot', 'plot__project').get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = BookingSerializer(booking)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=BookingSerializer,
+        responses={200: BookingSerializer},
+        description="Update booking details by booking ID (partial update - only provided fields will be updated)",
+        summary="Update Booking (Partial)"
     )
     def patch(self, request, booking_id):
         try:
@@ -116,8 +126,10 @@ class DashboardUpdateBookingView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        description="Fully update booking details by booking ID",
-        summary="Full Update Booking"
+        request=BookingSerializer,
+        responses={200: BookingSerializer},
+        description="Fully update booking details by booking ID (all fields required)",
+        summary="Update Booking (Full)"
     )
     def put(self, request, booking_id):
         try:
