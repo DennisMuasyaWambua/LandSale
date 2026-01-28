@@ -490,3 +490,104 @@ def get_payment_history(request):
     payments = Payment.objects.filter(user=request.user)
     serializer = PaymentSerializer(payments, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ============ ADMIN USER CREATION ============
+
+@extend_schema(
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'username': {'type': 'string', 'description': 'Username for the admin user'},
+                'email': {'type': 'string', 'format': 'email', 'description': 'Email address'},
+                'password': {'type': 'string', 'description': 'Password for the admin user'},
+                'first_name': {'type': 'string', 'description': 'First name (optional)'},
+                'last_name': {'type': 'string', 'description': 'Last name (optional)'},
+            },
+            'required': ['username', 'email', 'password']
+        }
+    },
+    responses={
+        201: {
+            'type': 'object',
+            'properties': {
+                'message': {'type': 'string'},
+                'user': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'integer'},
+                        'username': {'type': 'string'},
+                        'email': {'type': 'string'},
+                        'is_staff': {'type': 'boolean'},
+                        'is_superuser': {'type': 'boolean'},
+                    }
+                }
+            }
+        }
+    },
+    description="Create a new admin user (superuser). Only accessible by existing superusers.",
+    summary="Create Admin User"
+)
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def create_admin_user(request):
+    """
+    Create a new admin user with staff and superuser privileges.
+    Only accessible by existing superusers.
+    """
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+    first_name = request.data.get('first_name', '')
+    last_name = request.data.get('last_name', '')
+
+    # Validation
+    if not username or not email or not password:
+        return Response({
+            'error': 'Missing required fields',
+            'required': ['username', 'email', 'password']
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if user already exists
+    if User.objects.filter(username=username).exists():
+        return Response({
+            'error': 'Username already exists'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=email).exists():
+        return Response({
+            'error': 'Email already exists'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Create admin user
+    try:
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+
+        return Response({
+            'message': 'Admin user created successfully',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser,
+            }
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({
+            'error': 'Failed to create admin user',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -17,6 +17,9 @@ urlpatterns = [
     path('admin/subscription-plans/<int:plan_id>/', views.update_subscription_plan, name='update_subscription_plan'),
     path('admin/subscription-plans/<int:plan_id>/delete/', views.delete_subscription_plan, name='delete_subscription_plan'),
 
+    # Admin user management
+    path('admin/create-admin/', views.create_admin_user, name='create_admin_user'),
+
     # User subscription endpoints
     path('subscription-plans/', views.list_active_subscription_plans, name='list_active_subscription_plans'),
     path('subscription-plans/<int:plan_id>/', views.get_subscription_plan, name='get_subscription_plan'),

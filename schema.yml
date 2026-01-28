@@ -148,6 +148,65 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /auth/admin/create-admin/:
+    post:
+      operationId: auth_admin_create_admin_create
+      description: Create a new admin user (superuser). Only accessible by existing
+        superusers.
+      summary: Create Admin User
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username for the admin user
+                email:
+                  type: string
+                  format: email
+                  description: Email address
+                password:
+                  type: string
+                  description: Password for the admin user
+                first_name:
+                  type: string
+                  description: First name (optional)
+                last_name:
+                  type: string
+                  description: Last name (optional)
+              required:
+              - username
+              - email
+              - password
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      is_staff:
+                        type: boolean
+                      is_superuser:
+                        type: boolean
+          description: ''
   /auth/admin/subscription-plans/:
     post:
       operationId: auth_admin_subscription_plans_create
