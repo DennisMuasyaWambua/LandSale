@@ -781,6 +781,309 @@ paths:
       responses:
         '200':
           description: No response body
+  /finance/agent-sales/:
+    get:
+      operationId: finance_agent_sales_list
+      description: Get all agent sales records with plot, commission, and agent details
+      summary: List Agent Sales
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentSales'
+          description: ''
+    post:
+      operationId: finance_agent_sales_create
+      description: Create a new agent sales record with plot, phase, commission, and
+        agent information
+      summary: Create Agent Sale
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSales'
+          description: ''
+  /finance/agent-sales/{sale_id}/:
+    get:
+      operationId: finance_agent_sales_retrieve
+      description: Get a single agent sales record by ID with full details
+      summary: Get Agent Sale
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSales'
+          description: ''
+    put:
+      operationId: finance_agent_sales_update
+      description: Fully update an agent sales record (all fields required)
+      summary: Update Agent Sale (Full)
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentSales'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSales'
+          description: ''
+    patch:
+      operationId: finance_agent_sales_partial_update
+      description: Partially update an agent sales record (only provided fields will
+        be updated)
+      summary: Update Agent Sale (Partial)
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentSales'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSales'
+          description: ''
+    delete:
+      operationId: finance_agent_sales_destroy
+      description: Delete an agent sales record by ID
+      summary: Delete Agent Sale
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /finance/project-sales/:
+    get:
+      operationId: finance_project_sales_list
+      description: Get all project sales records with plot and balance details
+      summary: List Project Sales
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectSales'
+          description: ''
+    post:
+      operationId: finance_project_sales_create
+      description: Create a new project sales record with client, plot, phase, purchase
+        price, and deposit
+      summary: Create Project Sale
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSales'
+          description: ''
+  /finance/project-sales/{sale_id}/:
+    get:
+      operationId: finance_project_sales_retrieve
+      description: Get a single project sales record by ID with full details and balance
+        calculation
+      summary: Get Project Sale
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSales'
+          description: ''
+    put:
+      operationId: finance_project_sales_update
+      description: Fully update a project sales record (all fields required)
+      summary: Update Project Sale (Full)
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectSales'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSales'
+          description: ''
+    patch:
+      operationId: finance_project_sales_partial_update
+      description: Partially update a project sales record (only provided fields will
+        be updated)
+      summary: Update Project Sale (Partial)
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectSales'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectSales'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectSales'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSales'
+          description: ''
+    delete:
+      operationId: finance_project_sales_destroy
+      description: Delete a project sales record by ID
+      summary: Delete Project Sale
+      parameters:
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - finance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /land/create_booking/:
     get:
       operationId: land_create_booking_retrieve
@@ -906,6 +1209,55 @@ paths:
           description: ''
 components:
   schemas:
+    AgentSales:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        plot_details:
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
+          readOnly: true
+        phase:
+          type: string
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        sub_agent:
+          type: boolean
+        sub_agent_name:
+          type: string
+          maxLength: 200
+        principal_agent:
+          type: string
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        plot:
+          type: integer
+      required:
+      - commission
+      - created_at
+      - id
+      - phase
+      - plot
+      - plot_details
+      - principal_agent
+      - purchase_price
+      - updated_at
     BlankEnum:
       enum:
       - ''
@@ -987,6 +1339,45 @@ components:
     NullEnum:
       enum:
       - null
+    PatchedAgentSales:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        plot_details:
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
+          readOnly: true
+        phase:
+          type: string
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        sub_agent:
+          type: boolean
+        sub_agent_name:
+          type: string
+          maxLength: 200
+        principal_agent:
+          type: string
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        plot:
+          type: integer
     PatchedBooking:
       type: object
       properties:
@@ -1030,6 +1421,45 @@ components:
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
         status:
           $ref: '#/components/schemas/BookingStatusEnum'
+        plot:
+          type: integer
+    PatchedProjectSales:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        plot_details:
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
+          readOnly: true
+        client:
+          type: string
+          maxLength: 200
+        phase:
+          type: string
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        deposit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
         plot:
           type: integer
     PatchedSubscriptionPlan:
@@ -1323,6 +1753,56 @@ components:
       - location
       - name
       - size
+      - updated_at
+    ProjectSales:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        plot_details:
+          allOf:
+          - $ref: '#/components/schemas/PlotDetail'
+          readOnly: true
+        client:
+          type: string
+          maxLength: 200
+        phase:
+          type: string
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        deposit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        plot:
+          type: integer
+      required:
+      - balance
+      - client
+      - created_at
+      - deposit
+      - id
+      - phase
+      - plot
+      - plot_details
+      - purchase_price
       - updated_at
     PropertyTypeEnum:
       enum:

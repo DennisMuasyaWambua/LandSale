@@ -33,3 +33,37 @@ class Booking(models.Model):
     purchase_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=15, decimal_places=2)
     status = models.CharField(max_length=50,choices=[('booked','Booked'),('confirmed','Confirmed'),('cancelled','Cancelled')])
+
+
+class ProjectSales(models.Model):
+    plot = models.ForeignKey(Plots, on_delete=models.CASCADE)
+    client = models.CharField(max_length=200)
+    phase = models.CharField(max_length=100)
+    purchase_price = models.DecimalField(max_digits=15, decimal_places=2)
+    deposit = models.DecimalField(max_digits=15, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Project Sales"
+
+    def __str__(self):
+        return f"{self.client} - Plot {self.plot.plot_number}"
+
+
+class AgentSales(models.Model):
+    plot = models.ForeignKey(Plots, on_delete=models.CASCADE)
+    phase = models.CharField(max_length=100)
+    purchase_price = models.DecimalField(max_digits=15, decimal_places=2)
+    commission = models.DecimalField(max_digits=15, decimal_places=2)
+    sub_agent = models.BooleanField(default=False)
+    sub_agent_name = models.CharField(max_length=200, blank=True, default='')
+    principal_agent = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Agent Sales"
+
+    def __str__(self):
+        return f"{self.principal_agent} - Plot {self.plot.plot_number}"

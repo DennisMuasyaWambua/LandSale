@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Plots, Project, Booking
+from .models import Plots, Project, Booking, ProjectSales, AgentSales
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -80,6 +80,100 @@ class BookingSerializer(serializers.ModelSerializer):
     def validate_amount_paid(self, value):
         if value < 0:
             raise serializers.ValidationError("Amount paid cannot be negative.")
+        return value
+
+    def validate_purchase_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Purchase price must be greater than 0.")
+        return value
+
+
+class ProjectSalesSerializer(serializers.ModelSerializer):
+    balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    plot_details = PlotDetailSerializer(source='plot', read_only=True)
+
+    class Meta:
+        model = ProjectSales
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['balance'] = instance.purchase_price - instance.deposit
+        return representation
+
+    def validate(self, attrs):
+        plot = attrs.get('plot')
+        phase = attrs.get('phase')
+
+        if not plot:
+            raise serializers.ValidationError({
+                "plot": "Please select a valid plot from the available plots."
+            })
+
+        # Validate phase if provided
+        if phase:
+            if not plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                })
+            if phase not in plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                })
+
+        return attrs
+
+    def validate_deposit(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Deposit cannot be negative.")
+        return value
+
+    def validate_purchase_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Purchase price must be greater than 0.")
+        return value
+
+
+class AgentSalesSerializer(serializers.ModelSerializer):
+    plot_details = PlotDetailSerializer(source='plot', read_only=True)
+
+    class Meta:
+        model = AgentSales
+        fields = '__all__'
+
+    def validate(self, attrs):
+        plot = attrs.get('plot')
+        phase = attrs.get('phase')
+        sub_agent = attrs.get('sub_agent', False)
+        sub_agent_name = attrs.get('sub_agent_name', '')
+
+        if not plot:
+            raise serializers.ValidationError({
+                "plot": "Please select a valid plot from the available plots."
+            })
+
+        # Validate phase if provided
+        if phase:
+            if not plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                })
+            if phase not in plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                })
+
+        # Validate sub_agent_name is provided when sub_agent is True
+        if sub_agent and not sub_agent_name:
+            raise serializers.ValidationError({
+                "sub_agent_name": "Sub agent name is required when sub_agent is True."
+            })
+
+        return attrs
+
+    def validate_commission(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Commission cannot be negative.")
         return value
 
     def validate_purchase_price(self, value):
