@@ -12,10 +12,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         return value
 
 class PlotsSerializer(serializers.ModelSerializer):
+    phase = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = Plots
         fields = '__all__'
-    
+        read_only_fields = ['is_available']
+
     def validate(self, attrs):
         project = attrs.get('project')
         if not project:
@@ -23,16 +26,24 @@ class PlotsSerializer(serializers.ModelSerializer):
                 "project": "Please select a valid project. Create a project first if none exist."
             })
         return attrs
-    
+
     def validate_price(self, value):
         if value <= 0:
             raise serializers.ValidationError("Price must be greater than 0.")
         return value
-    
+
     def validate_size(self, value):
         if value <= 0:
             raise serializers.ValidationError("Size must be greater than 0.")
         return value
+
+    def create(self, validated_data):
+        phase = validated_data.pop('phase', '')
+        if phase:
+            validated_data['phase'] = [phase]
+        else:
+            validated_data['phase'] = []
+        return super().create(validated_data)
 
 class PlotDetailSerializer(serializers.ModelSerializer):
     project = ProjectSerializer(read_only=True)
