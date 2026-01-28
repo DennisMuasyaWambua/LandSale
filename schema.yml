@@ -918,6 +918,9 @@ components:
         balance:
           type: string
           readOnly: true
+        plot_details:
+          type: string
+          readOnly: true
         customer_name:
           type: string
           maxLength: 200
@@ -955,6 +958,7 @@ components:
       - payment_method
       - payment_reference
       - plot
+      - plot_details
       - status
     BookingStatusEnum:
       enum:
@@ -984,6 +988,9 @@ components:
           type: integer
           readOnly: true
         balance:
+          type: string
+          readOnly: true
+        plot_details:
           type: string
           readOnly: true
         customer_name:

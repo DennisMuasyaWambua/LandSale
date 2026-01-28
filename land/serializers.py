@@ -34,8 +34,17 @@ class PlotsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Size must be greater than 0.")
         return value
 
+class PlotDetailSerializer(serializers.ModelSerializer):
+    project = ProjectSerializer(read_only=True)
+
+    class Meta:
+        model = Plots
+        fields = '__all__'
+
+
 class BookingSerializer(serializers.ModelSerializer):
     balance = serializers.SerializerMethodField()
+    plot_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -43,6 +52,14 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def get_balance(self, obj):
         return obj.purchase_price - obj.amount_paid
+
+    def get_plot_details(self, obj):
+        return PlotDetailSerializer(obj.plot).data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['plot_details'] = self.get_plot_details(instance)
+        return representation
 
     def validate(self, attrs):
         plot = attrs.get('plot')
