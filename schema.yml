@@ -1219,6 +1219,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
+        sub_agent_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
         phase:
           type: string
           maxLength: 100
@@ -1229,9 +1234,8 @@ components:
         commission:
           type: string
           format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        sub_agent:
-          type: boolean
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
         sub_agent_name:
           type: string
           maxLength: 200
@@ -1257,6 +1261,7 @@ components:
       - plot_details
       - principal_agent
       - purchase_price
+      - sub_agent_fee
       - updated_at
     BlankEnum:
       enum:
@@ -1349,6 +1354,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
+        sub_agent_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
         phase:
           type: string
           maxLength: 100
@@ -1359,9 +1369,8 @@ components:
         commission:
           type: string
           format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        sub_agent:
-          type: boolean
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
         sub_agent_name:
           type: string
           maxLength: 200

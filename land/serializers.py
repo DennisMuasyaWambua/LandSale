@@ -136,16 +136,21 @@ class ProjectSalesSerializer(serializers.ModelSerializer):
 
 class AgentSalesSerializer(serializers.ModelSerializer):
     plot_details = PlotDetailSerializer(source='plot', read_only=True)
+    sub_agent_fee = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
 
     class Meta:
         model = AgentSales
         fields = '__all__'
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Calculate sub_agent_fee: commission (percent) * purchase_price / 100
+        representation['sub_agent_fee'] = (instance.commission * instance.purchase_price) / 100
+        return representation
+
     def validate(self, attrs):
         plot = attrs.get('plot')
         phase = attrs.get('phase')
-        sub_agent = attrs.get('sub_agent', False)
-        sub_agent_name = attrs.get('sub_agent_name', '')
 
         if not plot:
             raise serializers.ValidationError({
@@ -163,17 +168,11 @@ class AgentSalesSerializer(serializers.ModelSerializer):
                     "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
                 })
 
-        # Validate sub_agent_name is provided when sub_agent is True
-        if sub_agent and not sub_agent_name:
-            raise serializers.ValidationError({
-                "sub_agent_name": "Sub agent name is required when sub_agent is True."
-            })
-
         return attrs
 
     def validate_commission(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Commission cannot be negative.")
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("Commission must be between 0 and 100 percent.")
         return value
 
     def validate_purchase_price(self, value):
