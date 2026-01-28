@@ -24,6 +24,7 @@ class Plots(models.Model):
 
 class Booking(models.Model):
     plot = models.ForeignKey(Plots, on_delete=models.CASCADE)
+    phase = models.CharField(max_length=100, blank=True, default='')
     customer_name = models.CharField(max_length=200)
     customer_contact = models.CharField(max_length=100)
     booking_date = models.DateTimeField(auto_now_add=True)

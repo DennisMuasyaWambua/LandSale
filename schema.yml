@@ -924,6 +924,9 @@ components:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
+        phase:
+          type: string
+          maxLength: 100
         customer_name:
           type: string
           maxLength: 200
@@ -999,6 +1002,9 @@ components:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
+        phase:
+          type: string
+          maxLength: 100
         customer_name:
           type: string
           maxLength: 200

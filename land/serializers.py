@@ -57,10 +57,24 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         plot = attrs.get('plot')
+        phase = attrs.get('phase')
+
         if not plot:
             raise serializers.ValidationError({
                 "plot": "Please select a valid plot from the available plots."
             })
+
+        # Validate phase if provided
+        if phase:
+            if not plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                })
+            if phase not in plot.phase:
+                raise serializers.ValidationError({
+                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                })
+
         return attrs
 
     def validate_amount_paid(self, value):
