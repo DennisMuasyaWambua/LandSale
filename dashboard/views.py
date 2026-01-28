@@ -62,7 +62,8 @@ class DashboardProjectsView(APIView):
 
 class DashboardBookingsView(APIView):
     permission_classes = [IsAuthenticated]
-    
+    serializer_class = BookingSerializer
+
     @extend_schema(
         description="Get all bookings for dashboard management",
         summary="Dashboard Bookings"
@@ -75,7 +76,7 @@ class DashboardBookingsView(APIView):
 
 class DashboardRecentActivityView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     @extend_schema(
         description="Get recent bookings and projects activity for dashboard",
         summary="Dashboard Recent Activity"
@@ -83,9 +84,52 @@ class DashboardRecentActivityView(APIView):
     def get(self, request):
         recent_bookings = Booking.objects.select_related('plot', 'plot__project').order_by('-booking_date')[:10]
         recent_projects = Project.objects.order_by('-created_at')[:5]
-        
+
         data = {
             'recent_bookings': BookingSerializer(recent_bookings, many=True).data,
             'recent_projects': ProjectSerializer(recent_projects, many=True).data
         }
         return Response(data, status=status.HTTP_200_OK)
+
+
+class DashboardUpdateBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookingSerializer
+
+    @extend_schema(
+        description="Update booking details by booking ID",
+        summary="Update Booking"
+    )
+    def patch(self, request, booking_id):
+        try:
+            booking = Booking.objects.get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = BookingSerializer(booking, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        description="Fully update booking details by booking ID",
+        summary="Full Update Booking"
+    )
+    def put(self, request, booking_id):
+        try:
+            booking = Booking.objects.get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = BookingSerializer(booking, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

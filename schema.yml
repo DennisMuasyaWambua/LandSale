@@ -651,7 +651,77 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /dashboard/bookings/{booking_id}/:
+    put:
+      operationId: dashboard_bookings_update
+      description: Fully update booking details by booking ID
+      summary: Full Update Booking
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+    patch:
+      operationId: dashboard_bookings_partial_update
+      description: Update booking details by booking ID
+      summary: Update Booking
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBooking'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
   /dashboard/projects/:
     get:
       operationId: dashboard_projects_retrieve
@@ -877,6 +947,35 @@ components:
     NullEnum:
       enum:
       - null
+    PatchedBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        customer_name:
+          type: string
+          maxLength: 200
+        customer_contact:
+          type: string
+          maxLength: 100
+        booking_date:
+          type: string
+          format: date-time
+          readOnly: true
+        payment_reference:
+          type: string
+          maxLength: 100
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/BookingStatusEnum'
+        plot:
+          type: integer
     PatchedSubscriptionPlan:
       type: object
       properties:
