@@ -20,7 +20,18 @@ from .models import PasswordReset, SubscriptionPlan, UserSubscription, Payment
 
 @extend_schema(
     request=UserRegistrationSerializer,
-    responses={201: UserSerializer},
+    responses={
+        201: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string", "example": "User created successfully"},
+                "user": {"type": "object", "description": "User details"},
+                "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"},
+                "access": {"type": "string", "description": "JWT access token"},
+                "refresh": {"type": "string", "description": "JWT refresh token"}
+            }
+        }
+    },
     description="Register a new user account",
     examples=[
         OpenApiExample(
@@ -43,9 +54,19 @@ def register(request):
     if serializer.is_valid():
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
+
+        # Determine user role
+        if user.is_superuser:
+            role = 'admin'
+        elif user.is_staff:
+            role = 'staff'
+        else:
+            role = 'user'
+
         return Response({
             'message': 'User created successfully',
             'user': UserSerializer(user).data,
+            'role': role,
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_201_CREATED)
@@ -54,8 +75,19 @@ def register(request):
 
 @extend_schema(
     request=UserLoginSerializer,
-    responses={200: UserSerializer},
-    description="Login user and get JWT tokens",
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string", "example": "Login successful"},
+                "user": {"type": "object", "description": "User details"},
+                "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"},
+                "access": {"type": "string", "description": "JWT access token"},
+                "refresh": {"type": "string", "description": "JWT refresh token"}
+            }
+        }
+    },
+    description="Login user and get JWT tokens with role information",
     examples=[
         OpenApiExample(
             "User Login Example",
@@ -73,9 +105,19 @@ def login(request):
     if serializer.is_valid():
         user = serializer.validated_data['user']
         refresh = RefreshToken.for_user(user)
+
+        # Determine user role
+        if user.is_superuser:
+            role = 'admin'
+        elif user.is_staff:
+            role = 'staff'
+        else:
+            role = 'user'
+
         return Response({
             'message': 'Login successful',
             'user': UserSerializer(user).data,
+            'role': role,
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_200_OK)
