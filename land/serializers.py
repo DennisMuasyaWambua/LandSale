@@ -59,48 +59,20 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = '__all__'
+        exclude = ['phase']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['balance'] = instance.purchase_price - instance.amount_paid
-
-        # Move phase inside plot_details, positioned after price
-        if 'plot_details' in representation and 'phase' in representation:
-            phase_value = representation.pop('phase')
-            plot_details = representation['plot_details']
-
-            # Reconstruct plot_details with phase after price
-            ordered_plot_details = {}
-            for key, value in plot_details.items():
-                ordered_plot_details[key] = value
-                if key == 'price':
-                    ordered_plot_details['phase'] = phase_value
-
-            representation['plot_details'] = ordered_plot_details
-
         return representation
 
     def validate(self, attrs):
         plot = attrs.get('plot')
-        phase = attrs.get('phase')
 
         if not plot:
             raise serializers.ValidationError({
                 "plot": "Please select a valid plot from the available plots."
             })
-
-        # Validate phase against project's phases
-        if phase:
-            project_phases = plot.project.phase
-            if not project_phases:
-                raise serializers.ValidationError({
-                    "phase": f"The project has no phases defined. Available phases: []"
-                })
-            if phase not in project_phases:
-                raise serializers.ValidationError({
-                    "phase": f"Phase '{phase}' is not available for this project. Available phases: {', '.join(project_phases)}"
-                })
 
         return attrs
 
