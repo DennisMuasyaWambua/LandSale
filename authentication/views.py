@@ -25,8 +25,20 @@ from .models import PasswordReset, SubscriptionPlan, UserSubscription, Payment
             "type": "object",
             "properties": {
                 "message": {"type": "string", "example": "User created successfully"},
-                "user": {"type": "object", "description": "User details"},
-                "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"},
+                "user": {
+                    "type": "object",
+                    "description": "User details including role",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "username": {"type": "string"},
+                        "email": {"type": "string"},
+                        "first_name": {"type": "string"},
+                        "last_name": {"type": "string"},
+                        "is_active": {"type": "boolean"},
+                        "date_joined": {"type": "string", "format": "date-time"},
+                        "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"}
+                    }
+                },
                 "access": {"type": "string", "description": "JWT access token"},
                 "refresh": {"type": "string", "description": "JWT refresh token"}
             }
@@ -54,19 +66,9 @@ def register(request):
     if serializer.is_valid():
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
-
-        # Determine user role
-        if user.is_superuser:
-            role = 'admin'
-        elif user.is_staff:
-            role = 'staff'
-        else:
-            role = 'user'
-
         return Response({
             'message': 'User created successfully',
             'user': UserSerializer(user).data,
-            'role': role,
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_201_CREATED)
@@ -80,8 +82,20 @@ def register(request):
             "type": "object",
             "properties": {
                 "message": {"type": "string", "example": "Login successful"},
-                "user": {"type": "object", "description": "User details"},
-                "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"},
+                "user": {
+                    "type": "object",
+                    "description": "User details including role",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "username": {"type": "string"},
+                        "email": {"type": "string"},
+                        "first_name": {"type": "string"},
+                        "last_name": {"type": "string"},
+                        "is_active": {"type": "boolean"},
+                        "date_joined": {"type": "string", "format": "date-time"},
+                        "role": {"type": "string", "enum": ["admin", "staff", "user"], "description": "User role based on permissions"}
+                    }
+                },
                 "access": {"type": "string", "description": "JWT access token"},
                 "refresh": {"type": "string", "description": "JWT refresh token"}
             }
@@ -105,19 +119,9 @@ def login(request):
     if serializer.is_valid():
         user = serializer.validated_data['user']
         refresh = RefreshToken.for_user(user)
-
-        # Determine user role
-        if user.is_superuser:
-            role = 'admin'
-        elif user.is_staff:
-            role = 'staff'
-        else:
-            role = 'user'
-
         return Response({
             'message': 'Login successful',
             'user': UserSerializer(user).data,
-            'role': role,
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_200_OK)
