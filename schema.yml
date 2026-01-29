@@ -1145,7 +1145,9 @@ paths:
           description: No response body
   /land/create_booking/:
     get:
-      operationId: land_create_booking_retrieve
+      operationId: land_create_booking_list
+      description: Get all bookings with plot details including phase, balance calculation, and nested project information
+      summary: List All Bookings
       tags:
       - land
       security:
@@ -1156,7 +1158,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Booking'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
           description: ''
     post:
       operationId: land_create_booking_create
@@ -1327,6 +1331,7 @@ components:
       - ''
     Booking:
       type: object
+      description: Booking information with calculated balance and nested plot details including phase
       properties:
         id:
           type: integer
@@ -1336,13 +1341,12 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
+          description: Calculated as purchase_price - amount_paid
         plot_details:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
-        phase:
-          type: string
-          maxLength: 100
+          description: Full plot information including project details and phase
         customer_name:
           type: string
           maxLength: 200
@@ -1370,6 +1374,7 @@ components:
           $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
+          description: Plot ID reference
       required:
       - amount_paid
       - balance
@@ -1448,6 +1453,7 @@ components:
           type: integer
     PatchedBooking:
       type: object
+      description: Partial booking update schema (phase is nested in plot_details)
       properties:
         id:
           type: integer
@@ -1457,13 +1463,12 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
+          description: Calculated as purchase_price - amount_paid
         plot_details:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
-        phase:
-          type: string
-          maxLength: 100
+          description: Full plot information including project details and phase
         customer_name:
           type: string
           maxLength: 200
@@ -1491,6 +1496,7 @@ components:
           $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
+          description: Plot ID reference
     PatchedProjectSales:
       type: object
       properties:
