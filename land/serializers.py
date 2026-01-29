@@ -54,7 +54,6 @@ class PlotDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'project', 'plot_number', 'phase', 'size', 'price', 'property_type', 'is_available', 'created_at', 'updated_at']
 
     def get_phase(self, obj):
-        # This will be set from the BookingSerializer context
         return self.context.get('booking_phase', '')
 
 
@@ -67,7 +66,6 @@ class BookingSerializer(serializers.ModelSerializer):
         exclude = ['phase']
 
     def get_plot_details(self, instance):
-        # Pass the booking's phase to the PlotDetailSerializer through context
         context = {'booking_phase': instance.phase}
         serializer = PlotDetailSerializer(instance.plot, context=context)
         return serializer.data

@@ -1707,7 +1707,7 @@ components:
           maxLength: 50
         phase:
           type: string
-          maxLength: 100
+          readOnly: true
           description: Phase information from the booking
         size:
           type: string
