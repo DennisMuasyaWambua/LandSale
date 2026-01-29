@@ -90,15 +90,16 @@ class BookingSerializer(serializers.ModelSerializer):
                 "plot": "Please select a valid plot from the available plots."
             })
 
-        # Validate phase if provided
+        # Validate phase against project's phases
         if phase:
-            if not plot.phase:
+            project_phases = plot.project.phase
+            if not project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                    "phase": f"The project has no phases defined. Available phases: []"
                 })
-            if phase not in plot.phase:
+            if phase not in project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                    "phase": f"Phase '{phase}' is not available for this project. Available phases: {', '.join(project_phases)}"
                 })
 
         return attrs
@@ -136,15 +137,16 @@ class ProjectSalesSerializer(serializers.ModelSerializer):
                 "plot": "Please select a valid plot from the available plots."
             })
 
-        # Validate phase if provided
+        # Validate phase against project's phases
         if phase:
-            if not plot.phase:
+            project_phases = plot.project.phase
+            if not project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                    "phase": f"The project has no phases defined. Available phases: []"
                 })
-            if phase not in plot.phase:
+            if phase not in project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                    "phase": f"Phase '{phase}' is not available for this project. Available phases: {', '.join(project_phases)}"
                 })
 
         return attrs
@@ -183,15 +185,16 @@ class AgentSalesSerializer(serializers.ModelSerializer):
                 "plot": "Please select a valid plot from the available plots."
             })
 
-        # Validate phase if provided
+        # Validate phase against project's phases
         if phase:
-            if not plot.phase:
+            project_phases = plot.project.phase
+            if not project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"The selected plot has no phases defined. Available phases: []"
+                    "phase": f"The project has no phases defined. Available phases: []"
                 })
-            if phase not in plot.phase:
+            if phase not in project_phases:
                 raise serializers.ValidationError({
-                    "phase": f"Phase '{phase}' is not available for this plot. Available phases: {', '.join(plot.phase)}"
+                    "phase": f"Phase '{phase}' is not available for this project. Available phases: {', '.join(project_phases)}"
                 })
 
         return attrs
