@@ -1,153 +1,9 @@
 openapi: 3.0.3
 info:
-  title: ''
-  version: 0.0.0
+  title: Land Sale API
+  version: 1.0.0
+  description: Land Sale Management System API
 paths:
-  /api/schema/:
-    get:
-      operationId: api_schema_retrieve
-      description: |-
-        OpenApi3 schema for this API. Format can be selected via content negotiation.
-
-        - YAML: application/vnd.oai.openapi
-        - JSON: application/vnd.oai.openapi+json
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - yaml
-      - in: query
-        name: lang
-        schema:
-          type: string
-          enum:
-          - af
-          - ar
-          - ar-dz
-          - ast
-          - az
-          - be
-          - bg
-          - bn
-          - br
-          - bs
-          - ca
-          - ckb
-          - cs
-          - cy
-          - da
-          - de
-          - dsb
-          - el
-          - en
-          - en-au
-          - en-gb
-          - eo
-          - es
-          - es-ar
-          - es-co
-          - es-mx
-          - es-ni
-          - es-ve
-          - et
-          - eu
-          - fa
-          - fi
-          - fr
-          - fy
-          - ga
-          - gd
-          - gl
-          - he
-          - hi
-          - hr
-          - hsb
-          - hu
-          - hy
-          - ia
-          - id
-          - ig
-          - io
-          - is
-          - it
-          - ja
-          - ka
-          - kab
-          - kk
-          - km
-          - kn
-          - ko
-          - ky
-          - lb
-          - lt
-          - lv
-          - mk
-          - ml
-          - mn
-          - mr
-          - ms
-          - my
-          - nb
-          - ne
-          - nl
-          - nn
-          - os
-          - pa
-          - pl
-          - pt
-          - pt-br
-          - ro
-          - ru
-          - sk
-          - sl
-          - sq
-          - sr
-          - sr-latn
-          - sv
-          - sw
-          - ta
-          - te
-          - tg
-          - th
-          - tk
-          - tr
-          - tt
-          - udm
-          - ug
-          - uk
-          - ur
-          - uz
-          - vi
-          - zh-hans
-          - zh-hant
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/vnd.oai.openapi:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/yaml:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi+json:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
   /auth/admin/create-admin/:
     post:
       operationId: auth_admin_create_admin_create
@@ -217,13 +73,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
         required: true
       security:
       - jwtAuth: []
@@ -250,13 +106,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SubscriptionPlan'
+              $ref: '#/components/schemas/SubscriptionPlanRequest'
         required: true
       security:
       - jwtAuth: []
@@ -282,13 +138,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+              $ref: '#/components/schemas/PatchedSubscriptionPlanRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+              $ref: '#/components/schemas/PatchedSubscriptionPlanRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedSubscriptionPlan'
+              $ref: '#/components/schemas/PatchedSubscriptionPlanRequest'
       security:
       - jwtAuth: []
       responses:
@@ -342,7 +198,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ForgotPassword'
+              $ref: '#/components/schemas/ForgotPasswordRequest'
             examples:
               ForgotPasswordExample:
                 value:
@@ -350,10 +206,10 @@ paths:
                 summary: Forgot Password Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ForgotPassword'
+              $ref: '#/components/schemas/ForgotPasswordRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ForgotPassword'
+              $ref: '#/components/schemas/ForgotPasswordRequest'
         required: true
       security:
       - jwtAuth: []
@@ -383,7 +239,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: '#/components/schemas/UserLoginRequest'
             examples:
               UserLoginExample:
                 value:
@@ -392,10 +248,10 @@ paths:
                 summary: User Login Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: '#/components/schemas/UserLoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: '#/components/schemas/UserLoginRequest'
         required: true
       security:
       - jwtAuth: []
@@ -529,13 +385,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
         required: true
       responses:
         '200':
@@ -554,7 +410,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: '#/components/schemas/UserRegistrationRequest'
             examples:
               UserRegistrationExample:
                 value:
@@ -567,10 +423,10 @@ paths:
                 summary: User Registration Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: '#/components/schemas/UserRegistrationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: '#/components/schemas/UserRegistrationRequest'
         required: true
       security:
       - jwtAuth: []
@@ -638,7 +494,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResetPassword'
+              $ref: '#/components/schemas/ResetPasswordRequest'
             examples:
               ResetPasswordExample:
                 value:
@@ -648,10 +504,10 @@ paths:
                 summary: Reset Password Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ResetPassword'
+              $ref: '#/components/schemas/ResetPasswordRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ResetPassword'
+              $ref: '#/components/schemas/ResetPasswordRequest'
         required: true
       security:
       - jwtAuth: []
@@ -683,13 +539,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Subscribe'
+              $ref: '#/components/schemas/SubscribeRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Subscribe'
+              $ref: '#/components/schemas/SubscribeRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Subscribe'
+              $ref: '#/components/schemas/SubscribeRequest'
         required: true
       security:
       - jwtAuth: []
@@ -825,13 +681,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
         required: true
       security:
       - jwtAuth: []
@@ -859,13 +715,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedBooking'
+              $ref: '#/components/schemas/PatchedBookingRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedBooking'
+              $ref: '#/components/schemas/PatchedBookingRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedBooking'
+              $ref: '#/components/schemas/PatchedBookingRequest'
       security:
       - jwtAuth: []
       responses:
@@ -941,13 +797,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
         required: true
       security:
       - jwtAuth: []
@@ -996,13 +852,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AgentSales'
+              $ref: '#/components/schemas/AgentSalesRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1030,13 +886,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSales'
+              $ref: '#/components/schemas/PatchedAgentSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSales'
+              $ref: '#/components/schemas/PatchedAgentSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSales'
+              $ref: '#/components/schemas/PatchedAgentSalesRequest'
       security:
       - jwtAuth: []
       responses:
@@ -1092,13 +948,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1148,13 +1004,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ProjectSales'
+              $ref: '#/components/schemas/ProjectSalesRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1182,13 +1038,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedProjectSales'
+              $ref: '#/components/schemas/PatchedProjectSalesRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedProjectSales'
+              $ref: '#/components/schemas/PatchedProjectSalesRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedProjectSales'
+              $ref: '#/components/schemas/PatchedProjectSalesRequest'
       security:
       - jwtAuth: []
       responses:
@@ -1243,13 +1099,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Booking'
+              $ref: '#/components/schemas/BookingRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1284,13 +1140,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1325,13 +1181,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Plots'
+              $ref: '#/components/schemas/PlotsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Plots'
+              $ref: '#/components/schemas/PlotsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Plots'
+              $ref: '#/components/schemas/PlotsRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1399,6 +1255,37 @@ components:
       - purchase_price
       - sub_agent_fee
       - updated_at
+    AgentSalesRequest:
+      type: object
+      properties:
+        phase:
+          type: string
+          minLength: 1
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
+        sub_agent_name:
+          type: string
+          maxLength: 200
+        principal_agent:
+          type: string
+          minLength: 1
+          maxLength: 200
+        plot:
+          type: integer
+      required:
+      - commission
+      - phase
+      - plot
+      - principal_agent
+      - purchase_price
     BlankEnum:
       enum:
       - ''
@@ -1456,97 +1343,20 @@ components:
       - plot
       - plot_details
       - status
-    BookingStatusEnum:
-      enum:
-      - booked
-      - confirmed
-      - cancelled
-      type: string
-      description: |-
-        * `booked` - Booked
-        * `confirmed` - Confirmed
-        * `cancelled` - Cancelled
-    ForgotPassword:
+    BookingRequest:
       type: object
       properties:
-        email:
-          type: string
-          format: email
-      required:
-      - email
-    NullEnum:
-      enum:
-      - null
-    PatchedAgentSales:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        plot_details:
-          allOf:
-          - $ref: '#/components/schemas/PlotDetail'
-          readOnly: true
-        sub_agent_fee:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-          readOnly: true
-        phase:
-          type: string
-          maxLength: 100
-        purchase_price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        commission:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
-          description: Commission percentage (e.g., 5.00 for 5%)
-        sub_agent_name:
-          type: string
-          maxLength: 200
-        principal_agent:
-          type: string
-          maxLength: 200
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-        plot:
-          type: integer
-    PatchedBooking:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        balance:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-          readOnly: true
-        plot_details:
-          allOf:
-          - $ref: '#/components/schemas/PlotDetail'
-          readOnly: true
         customer_name:
           type: string
+          minLength: 1
           maxLength: 200
         customer_contact:
           type: string
+          minLength: 1
           maxLength: 100
-        booking_date:
-          type: string
-          format: date-time
-          readOnly: true
         payment_reference:
           type: string
+          minLength: 1
           maxLength: 100
         payment_method:
           $ref: '#/components/schemas/PaymentMethodEnum'
@@ -1562,26 +1372,100 @@ components:
           $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
-    PatchedProjectSales:
+      required:
+      - amount_paid
+      - customer_contact
+      - customer_name
+      - payment_method
+      - payment_reference
+      - plot
+      - status
+    BookingStatusEnum:
+      enum:
+      - booked
+      - confirmed
+      - cancelled
+      type: string
+      description: |-
+        * `booked` - Booked
+        * `confirmed` - Confirmed
+        * `cancelled` - Cancelled
+    ForgotPasswordRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        balance:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    NullEnum:
+      enum:
+      - null
+    PatchedAgentSalesRequest:
+      type: object
+      properties:
+        phase:
+          type: string
+          minLength: 1
+          maxLength: 100
+        purchase_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-          readOnly: true
-        plot_details:
-          allOf:
-          - $ref: '#/components/schemas/PlotDetail'
-          readOnly: true
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
+        sub_agent_name:
+          type: string
+          maxLength: 200
+        principal_agent:
+          type: string
+          minLength: 1
+          maxLength: 200
+        plot:
+          type: integer
+    PatchedBookingRequest:
+      type: object
+      properties:
+        customer_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        customer_contact:
+          type: string
+          minLength: 1
+          maxLength: 100
+        payment_reference:
+          type: string
+          minLength: 1
+          maxLength: 100
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/BookingStatusEnum'
+        plot:
+          type: integer
+    PatchedProjectSalesRequest:
+      type: object
+      properties:
         client:
           type: string
+          minLength: 1
           maxLength: 200
         phase:
           type: string
+          minLength: 1
           maxLength: 100
         purchase_price:
           type: string
@@ -1591,24 +1475,14 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
         plot:
           type: integer
-    PatchedSubscriptionPlan:
+    PatchedSubscriptionPlanRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
+          minLength: 1
           maxLength: 200
         description:
           type: string
@@ -1627,17 +1501,6 @@ components:
           type: boolean
         features:
           description: List of features included in this plan
-        duration_in_days:
-          type: string
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
     Payment:
       type: object
       properties:
@@ -1852,6 +1715,32 @@ components:
       - project
       - size
       - updated_at
+    PlotsRequest:
+      type: object
+      properties:
+        phase:
+          type: string
+        plot_number:
+          type: string
+          minLength: 1
+          maxLength: 50
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        project:
+          type: integer
+      required:
+      - plot_number
+      - price
+      - project
+      - size
     Project:
       type: object
       properties:
@@ -1892,6 +1781,35 @@ components:
       - name
       - size
       - updated_at
+    ProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        phase:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        project_svg_map:
+          type: string
+          format: binary
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+          maxLength: 300
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - location
+      - name
+      - size
     ProjectSales:
       type: object
       properties:
@@ -1942,6 +1860,33 @@ components:
       - plot_details
       - purchase_price
       - updated_at
+    ProjectSalesRequest:
+      type: object
+      properties:
+        client:
+          type: string
+          minLength: 1
+          maxLength: 200
+        phase:
+          type: string
+          minLength: 1
+          maxLength: 100
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        deposit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        plot:
+          type: integer
+      required:
+      - client
+      - deposit
+      - phase
+      - plot
+      - purchase_price
     PropertyTypeEnum:
       enum:
       - commercial
@@ -1962,7 +1907,7 @@ components:
         * `WEEKLY` - Weekly
         * `MONTHLY` - Monthly
         * `YEARLY` - Yearly
-    ResetPassword:
+    ResetPasswordRequest:
       type: object
       properties:
         token:
@@ -1975,11 +1920,12 @@ components:
         password_confirm:
           type: string
           writeOnly: true
+          minLength: 1
       required:
       - password
       - password_confirm
       - token
-    Subscribe:
+    SubscribeRequest:
       type: object
       properties:
         plan_id:
@@ -2030,6 +1976,33 @@ components:
       - id
       - name
       - updated_at
+    SubscriptionPlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        period_count:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Number of periods (e.g., 3 months)
+        is_active:
+          type: boolean
+        features:
+          description: List of features included in this plan
+      required:
+      - amount
+      - name
     TokenRefresh:
       type: object
       properties:
@@ -2040,6 +2013,14 @@ components:
           type: string
       required:
       - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
       - refresh
     User:
       type: object
@@ -2081,21 +2062,24 @@ components:
       - id
       - role
       - username
-    UserLogin:
+    UserLoginRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
         password:
           type: string
+          minLength: 1
       required:
       - password
       - username
-    UserRegistration:
+    UserRegistrationRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
           description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
           pattern: ^[\w.@+-]+$
@@ -2118,6 +2102,7 @@ components:
         password_confirm:
           type: string
           writeOnly: true
+          minLength: 1
       required:
       - password
       - password_confirm
