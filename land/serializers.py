@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Plots, Project, Booking, ProjectSales, AgentSales
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -53,6 +54,7 @@ class PlotDetailSerializer(serializers.ModelSerializer):
         model = Plots
         fields = ['id', 'project', 'plot_number', 'phase', 'size', 'price', 'property_type', 'is_available', 'created_at', 'updated_at']
 
+    @extend_schema_field(serializers.CharField(max_length=100, help_text="Phase information from the booking"))
     def get_phase(self, obj):
         return self.context.get('booking_phase', '')
 
@@ -65,6 +67,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         exclude = ['phase']
 
+    @extend_schema_field(PlotDetailSerializer)
     def get_plot_details(self, instance):
         context = {'booking_phase': instance.phase}
         serializer = PlotDetailSerializer(instance.plot, context=context)

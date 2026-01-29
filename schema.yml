@@ -376,7 +376,7 @@ paths:
   /auth/login/:
     post:
       operationId: auth_login_create
-      description: Login user and get JWT tokens
+      description: Login user and get JWT tokens with role information
       tags:
       - auth
       requestBody:
@@ -405,7 +405,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  user:
+                    type: object
+                    description: User details including role
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      is_active:
+                        type: boolean
+                      date_joined:
+                        type: string
+                        format: date-time
+                      role:
+                        type: string
+                        enum:
+                        - admin
+                        - staff
+                        - user
+                        description: User role based on permissions
+                  access:
+                    type: string
+                    description: JWT access token
+                  refresh:
+                    type: string
+                    description: JWT refresh token
               examples:
                 UserLoginExample:
                   value:
@@ -544,7 +580,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created successfully
+                  user:
+                    type: object
+                    description: User details including role
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      is_active:
+                        type: boolean
+                      date_joined:
+                        type: string
+                        format: date-time
+                      role:
+                        type: string
+                        enum:
+                        - admin
+                        - staff
+                        - user
+                        description: User role based on permissions
+                  access:
+                    type: string
+                    description: JWT access token
+                  refresh:
+                    type: string
+                    description: JWT refresh token
               examples:
                 UserRegistrationExample:
                   value:
@@ -1146,7 +1218,8 @@ paths:
   /land/create_booking/:
     get:
       operationId: land_create_booking_list
-      description: Get all bookings with plot details including phase, balance calculation, and nested project information
+      description: Get all bookings with plot details including phase, balance calculation,
+        and nested project information
       summary: List All Bookings
       tags:
       - land
@@ -1331,7 +1404,6 @@ components:
       - ''
     Booking:
       type: object
-      description: Booking information with calculated balance and nested plot details including phase
       properties:
         id:
           type: integer
@@ -1341,12 +1413,10 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
-          description: Calculated as purchase_price - amount_paid
         plot_details:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
-          description: Full plot information including project details and phase
         customer_name:
           type: string
           maxLength: 200
@@ -1374,7 +1444,6 @@ components:
           $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
-          description: Plot ID reference
       required:
       - amount_paid
       - balance
@@ -1453,7 +1522,6 @@ components:
           type: integer
     PatchedBooking:
       type: object
-      description: Partial booking update schema (phase is nested in plot_details)
       properties:
         id:
           type: integer
@@ -1463,12 +1531,10 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
-          description: Calculated as purchase_price - amount_paid
         plot_details:
           allOf:
           - $ref: '#/components/schemas/PlotDetail'
           readOnly: true
-          description: Full plot information including project details and phase
         customer_name:
           type: string
           maxLength: 200
@@ -1496,7 +1562,6 @@ components:
           $ref: '#/components/schemas/BookingStatusEnum'
         plot:
           type: integer
-          description: Plot ID reference
     PatchedProjectSales:
       type: object
       properties:
@@ -1713,8 +1778,8 @@ components:
           maxLength: 50
         phase:
           type: string
-          readOnly: true
           description: Phase information from the booking
+          readOnly: true
         size:
           type: string
           format: decimal
@@ -1738,6 +1803,7 @@ components:
       required:
       - created_at
       - id
+      - phase
       - plot_number
       - price
       - project
@@ -2007,9 +2073,13 @@ components:
           type: string
           format: date-time
           readOnly: true
+        role:
+          type: string
+          readOnly: true
       required:
       - date_joined
       - id
+      - role
       - username
     UserLogin:
       type: object

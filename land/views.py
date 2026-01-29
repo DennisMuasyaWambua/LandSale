@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from rest_framework.views import APIView 
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from drf_spectacular.utils import extend_schema
 
 from land.models import Project, Booking, Plots
 from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializer
@@ -33,6 +34,11 @@ class BookingView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
+      @extend_schema(
+            responses={200: BookingSerializer(many=True)},
+            description="Get all bookings with plot details including phase, balance calculation, and nested project information",
+            summary="List All Bookings"
+      )
       def get(self, request):
             bookings = Booking.objects.all()
             serializer = BookingSerializer(bookings, many=True)
