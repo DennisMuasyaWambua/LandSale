@@ -1705,6 +1705,10 @@ components:
         plot_number:
           type: string
           maxLength: 50
+        phase:
+          type: string
+          maxLength: 100
+          description: Phase information from the booking
         size:
           type: string
           format: decimal

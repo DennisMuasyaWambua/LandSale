@@ -47,19 +47,30 @@ class PlotsSerializer(serializers.ModelSerializer):
 
 class PlotDetailSerializer(serializers.ModelSerializer):
     project = ProjectSerializer(read_only=True)
+    phase = serializers.SerializerMethodField()
 
     class Meta:
         model = Plots
-        exclude = ['phase']
+        fields = ['id', 'project', 'plot_number', 'phase', 'size', 'price', 'property_type', 'is_available', 'created_at', 'updated_at']
+
+    def get_phase(self, obj):
+        # This will be set from the BookingSerializer context
+        return self.context.get('booking_phase', '')
 
 
 class BookingSerializer(serializers.ModelSerializer):
     balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    plot_details = PlotDetailSerializer(source='plot', read_only=True)
+    plot_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         exclude = ['phase']
+
+    def get_plot_details(self, instance):
+        # Pass the booking's phase to the PlotDetailSerializer through context
+        context = {'booking_phase': instance.phase}
+        serializer = PlotDetailSerializer(instance.plot, context=context)
+        return serializer.data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
