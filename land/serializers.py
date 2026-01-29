@@ -101,11 +101,17 @@ class BookingSerializer(serializers.ModelSerializer):
 
 class ProjectSalesSerializer(serializers.ModelSerializer):
     balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    plot_details = PlotDetailSerializer(source='plot', read_only=True)
+    plot_details = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectSales
         fields = '__all__'
+
+    @extend_schema_field(PlotDetailSerializer)
+    def get_plot_details(self, instance):
+        context = {'booking_phase': instance.phase}
+        serializer = PlotDetailSerializer(instance.plot, context=context)
+        return serializer.data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -147,12 +153,18 @@ class ProjectSalesSerializer(serializers.ModelSerializer):
 
 
 class AgentSalesSerializer(serializers.ModelSerializer):
-    plot_details = PlotDetailSerializer(source='plot', read_only=True)
+    plot_details = serializers.SerializerMethodField()
     sub_agent_fee = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
 
     class Meta:
         model = AgentSales
         fields = '__all__'
+
+    @extend_schema_field(PlotDetailSerializer)
+    def get_plot_details(self, instance):
+        context = {'booking_phase': instance.phase}
+        serializer = PlotDetailSerializer(instance.plot, context=context)
+        return serializer.data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
