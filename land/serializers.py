@@ -102,6 +102,7 @@ class BookingSerializer(serializers.ModelSerializer):
 class ProjectSalesSerializer(serializers.ModelSerializer):
     balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
     plot_details = serializers.SerializerMethodField()
+    phase = serializers.CharField(max_length=100, write_only=True)
 
     class Meta:
         model = ProjectSales
@@ -155,7 +156,6 @@ class ProjectSalesSerializer(serializers.ModelSerializer):
 class AgentSalesSerializer(serializers.ModelSerializer):
     plot_details = serializers.SerializerMethodField()
     sub_agent_fee = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    phase = serializers.CharField(max_length=100, write_only=True)
 
     class Meta:
         model = AgentSales
