@@ -1216,9 +1216,6 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
-        phase:
-          type: string
-          maxLength: 100
         purchase_price:
           type: string
           format: decimal
@@ -1248,7 +1245,6 @@ components:
       - commission
       - created_at
       - id
-      - phase
       - plot
       - plot_details
       - principal_agent
@@ -1260,6 +1256,7 @@ components:
       properties:
         phase:
           type: string
+          writeOnly: true
           minLength: 1
           maxLength: 100
         purchase_price:
@@ -1407,6 +1404,7 @@ components:
       properties:
         phase:
           type: string
+          writeOnly: true
           minLength: 1
           maxLength: 100
         purchase_price:
