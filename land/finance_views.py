@@ -129,7 +129,7 @@ class AgentSalesListCreateView(APIView):
     @extend_schema(
         request=AgentSalesSerializer,
         responses={201: AgentSalesSerializer},
-        description="Create a new agent sales record with plot, phase, commission, and agent information",
+        description="Create a new agent sales record with plot, commission, and agent information",
         summary="Create Agent Sale"
     )
     def post(self, request):

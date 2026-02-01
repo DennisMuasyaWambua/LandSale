@@ -159,7 +159,7 @@ class AgentSalesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgentSales
-        fields = '__all__'
+        exclude = ['phase']
 
     @extend_schema_field(PlotDetailSerializer)
     def get_plot_details(self, instance):
@@ -175,24 +175,18 @@ class AgentSalesSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         plot = attrs.get('plot')
-        phase = attrs.get('phase')
 
         if not plot:
             raise serializers.ValidationError({
                 "plot": "Please select a valid plot from the available plots."
             })
 
-        # Validate phase against project's phases
-        if phase:
-            project_phases = plot.project.phase
-            if not project_phases:
-                raise serializers.ValidationError({
-                    "phase": f"The project has no phases defined. Available phases: []"
-                })
-            if phase not in project_phases:
-                raise serializers.ValidationError({
-                    "phase": f"Phase '{phase}' is not available for this project. Available phases: {', '.join(project_phases)}"
-                })
+        # Auto-populate phase from plot if creating
+        if not self.instance:  # Creating new record
+            if plot.phase:
+                attrs['phase'] = plot.phase[0] if isinstance(plot.phase, list) and len(plot.phase) > 0 else ''
+            else:
+                attrs['phase'] = ''
 
         return attrs
 
