@@ -10,18 +10,40 @@ from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializ
 class ProjectView(APIView):
     permission_classes = [AllowAny]
     serializer_class = ProjectSerializer
-    
+
     def post(self, request):
         data = request.data
         serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
-            
+
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     def get(self, request):
         project = Project.objects.all()
         serializer =    ProjectSerializer(project, many=True)
+        return Response(serializer.data, status=200)
+
+
+class ProjectDetailView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = ProjectSerializer
+
+    @extend_schema(
+        responses={200: ProjectSerializer},
+        description="Get a single project by ID with all project details",
+        summary="Get Project"
+    )
+    def get(self, request, project_id):
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response(
+                {'error': 'Project not found'},
+                status=404
+            )
+
+        serializer = ProjectSerializer(project)
         return Response(serializer.data, status=200)
 class BookingView(APIView):
       permission_classes = [AllowAny]
