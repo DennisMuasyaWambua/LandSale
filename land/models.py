@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Project(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects', null=True, blank=True)
     name = models.CharField(max_length=200)
     phase = ArrayField(models.CharField(max_length=100), blank=True, default=list)
     project_svg_map = models.FileField(upload_to='project_maps/', null=True, blank=True)

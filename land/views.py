@@ -1,42 +1,53 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import extend_schema
 
 from land.models import Project, Booking, Plots
 from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializer
 # Create your views here.
 class ProjectView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
+    @extend_schema(
+        request=ProjectSerializer,
+        responses={201: ProjectSerializer},
+        description="Create a new project for the authenticated user",
+        summary="Create Project"
+    )
     def post(self, request):
         data = request.data
         serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
-
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
+    @extend_schema(
+        responses={200: ProjectSerializer(many=True)},
+        description="Get all projects for the authenticated user",
+        summary="List User Projects"
+    )
     def get(self, request):
-        project = Project.objects.all()
-        serializer =    ProjectSerializer(project, many=True)
+        projects = Project.objects.filter(user=request.user)
+        serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data, status=200)
 
 
 class ProjectDetailView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
     @extend_schema(
         responses={200: ProjectSerializer},
-        description="Get a single project by ID with all project details",
+        description="Get a single project by ID. Users can only access their own projects.",
         summary="Get Project"
     )
     def get(self, request, project_id):
         try:
-            project = Project.objects.get(id=project_id)
+            project = Project.objects.get(id=project_id, user=request.user)
         except Project.DoesNotExist:
             return Response(
                 {'error': 'Project not found'},
@@ -46,37 +57,70 @@ class ProjectDetailView(APIView):
         serializer = ProjectSerializer(project)
         return Response(serializer.data, status=200)
 class BookingView(APIView):
-      permission_classes = [AllowAny]
+      permission_classes = [IsAuthenticated]
       serializer_class = BookingSerializer
-      
+
+      @extend_schema(
+            request=BookingSerializer,
+            responses={201: BookingSerializer},
+            description="Create a new booking. The plot must belong to one of the user's projects.",
+            summary="Create Booking"
+      )
       def post(self, request):
             data = request.data
             serializer = BookingSerializer(data=data)
             if serializer.is_valid():
+                # Validate that the plot belongs to user's project
+                plot = serializer.validated_data.get('plot')
+                if plot and plot.project.user != request.user:
+                    return Response(
+                        {'error': 'You can only create bookings for plots in your own projects'},
+                        status=403
+                    )
                 serializer.save()
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
+
       @extend_schema(
             responses={200: BookingSerializer(many=True)},
-            description="Get all bookings with plot details including phase, balance calculation, and nested project information",
-            summary="List All Bookings"
+            description="Get all bookings for the authenticated user's projects with plot details including phase, balance calculation, and nested project information",
+            summary="List User's Bookings"
       )
       def get(self, request):
-            bookings = Booking.objects.all()
+            bookings = Booking.objects.filter(plot__project__user=request.user)
             serializer = BookingSerializer(bookings, many=True)
             return Response(serializer.data, status=200)
 class PlotsView(APIView):
-      permission_classes = [AllowAny]
+      permission_classes = [IsAuthenticated]
       serializer_class = PlotsSerializer
-      
+
+      @extend_schema(
+            responses={200: PlotsSerializer(many=True)},
+            description="Get all plots for the authenticated user's projects",
+            summary="List User's Plots"
+      )
       def get(self, request):
-            plots = Plots.objects.all()
+            plots = Plots.objects.filter(project__user=request.user)
             serializer = PlotsSerializer(plots, many=True)
             return Response(serializer.data, status=200)
+
+      @extend_schema(
+            request=PlotsSerializer,
+            responses={201: PlotsSerializer},
+            description="Create a new plot. The project must belong to the authenticated user.",
+            summary="Create Plot"
+      )
       def post(self, request):
             data = request.data
             serializer = PlotsSerializer(data=data)
             if serializer.is_valid():
+                # Validate that the project belongs to the user
+                project = serializer.validated_data.get('project')
+                if project and project.user != request.user:
+                    return Response(
+                        {'error': 'You can only create plots for your own projects'},
+                        status=403
+                    )
                 serializer.save()
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)

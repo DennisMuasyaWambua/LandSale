@@ -101,12 +101,12 @@ def register(request):
             }
         }
     },
-    description="Login user and get JWT tokens with role information",
+    description="Login user with email and get JWT tokens with role information",
     examples=[
         OpenApiExample(
             "User Login Example",
             value={
-                "username": "john_doe",
+                "email": "john@example.com",
                 "password": "secure_password123"
             }
         )

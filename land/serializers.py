@@ -6,7 +6,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-    
+        read_only_fields = ['user']
+
     def validate_size(self, value):
         if value <= 0:
             raise serializers.ValidationError("Size must be greater than 0.")
