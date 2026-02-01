@@ -31,4 +31,7 @@ urlpatterns = [
     path('payment/verify/<str:order_tracking_id>/', views.verify_payment, name='verify_payment'),
     path('payment/history/', views.get_payment_history, name='get_payment_history'),
     path('webhook/pesapal/', views.pesapal_webhook, name='pesapal_webhook'),
+
+    # Email endpoint
+    path('send-email/', views.send_email, name='send_email'),
 ]

@@ -28,13 +28,14 @@ This document outlines all the API changes made to the backend. Please review an
 
 ## Table of Contents
 1. [Authentication Changes](#authentication-changes)
-2. [Agent Sales Endpoints](#agent-sales-endpoints)
-3. [Project Endpoints](#project-endpoints)
-4. [User-Project Data Isolation](#user-project-data-isolation)
-5. [Plots Endpoints](#plots-endpoints)
-6. [Bookings Endpoints](#bookings-endpoints)
-7. [Project Sales Endpoints](#project-sales-endpoints)
-8. [Breaking Changes Summary](#breaking-changes-summary)
+2. [Email Sending Endpoint (NEW)](#email-sending-endpoint-new)
+3. [Agent Sales Endpoints](#agent-sales-endpoints)
+4. [Project Endpoints](#project-endpoints)
+5. [User-Project Data Isolation](#user-project-data-isolation)
+6. [Plots Endpoints](#plots-endpoints)
+7. [Bookings Endpoints](#bookings-endpoints)
+8. [Project Sales Endpoints](#project-sales-endpoints)
+9. [Breaking Changes Summary](#breaking-changes-summary)
 
 ---
 
@@ -88,7 +89,203 @@ This document outlines all the API changes made to the backend. Please review an
 
 ---
 
-## 2. Agent Sales Endpoints
+## 2. Email Sending Endpoint (NEW)
+
+### Send Email with Attachments
+
+**Endpoint:** `POST /auth/send-email/`
+
+**Status:** ✅ NEW ENDPOINT
+
+**What's New:**
+- Comprehensive email sending functionality
+- Support for multiple recipients (to, cc, bcc)
+- File attachment support (multiple files)
+- HTML email support
+- Auto-detection of HTML content
+
+#### Request Format:
+**Content-Type:** `multipart/form-data`
+
+**Required Fields:**
+- `subject` (string) - Email subject line
+- `body` (string) - Email body (plain text or HTML)
+- `to` (JSON array) - List of recipient emails
+
+**Optional Fields:**
+- `cc` (JSON array) - Carbon copy recipients
+- `bcc` (JSON array) - Blind carbon copy recipients
+- `attachments` (file uploads) - Multiple files supported
+
+#### Example Request (cURL):
+```bash
+curl -X POST http://api.example.com/auth/send-email/ \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F 'subject=Test Email' \
+  -F 'body=<html><body><h1>Hello</h1></body></html>' \
+  -F 'to=["user1@example.com", "user2@example.com"]' \
+  -F 'cc=["manager@example.com"]' \
+  -F 'bcc=["archive@example.com"]' \
+  -F 'attachments=@/path/to/file1.pdf' \
+  -F 'attachments=@/path/to/file2.png'
+```
+
+#### Example Request (JavaScript):
+```javascript
+const formData = new FormData();
+formData.append('subject', 'Test Email');
+formData.append('body', '<p>This is a test email</p>');
+formData.append('to', JSON.stringify(['user@example.com']));
+formData.append('cc', JSON.stringify(['manager@example.com']));
+
+// Add file attachments
+const fileInput = document.getElementById('fileInput');
+for (let file of fileInput.files) {
+    formData.append('attachments', file);
+}
+
+fetch('http://api.example.com/auth/send-email/', {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer ${accessToken}`
+    },
+    body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+#### Response (200 OK):
+```json
+{
+  "message": "Email sent successfully",
+  "recipients": {
+    "to": ["user1@example.com", "user2@example.com"],
+    "cc": ["manager@example.com"],
+    "bcc": ["archive@example.com"],
+    "total": 4
+  },
+  "attachments_count": 2,
+  "from": "noreply@example.com"
+}
+```
+
+#### Error Responses:
+
+**400 Bad Request - Validation Error:**
+```json
+{
+  "subject": ["This field is required."],
+  "to": ["At least one recipient email is required"]
+}
+```
+
+**400 Bad Request - File Too Large:**
+```json
+{
+  "error": "File \"large_document.pdf\" exceeds maximum size of 10MB"
+}
+```
+
+**401 Unauthorized:**
+```json
+{
+  "detail": "Authentication credentials were not provided."
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Failed to send email",
+  "detail": "SMTP connection failed"
+}
+```
+
+### Features & Limits:
+
+| Feature | Limit/Details |
+|---------|---------------|
+| Maximum Recipients | 100 total (to + cc + bcc) |
+| Maximum File Size | 10MB per attachment |
+| Multiple Files | Yes (unlimited count, size per file limited) |
+| HTML Support | Auto-detected from body content |
+| Supported File Types | All types (PDF, images, documents, etc.) |
+| Authentication | JWT token required |
+
+### Validation Rules:
+- ✅ Subject is required (max 255 characters)
+- ✅ Body is required (cannot be empty)
+- ✅ At least one "to" recipient required
+- ✅ All email addresses validated for correct format
+- ✅ Maximum 100 total recipients
+- ✅ Maximum 10MB per file attachment
+
+### HTML Email Detection:
+The API automatically detects HTML content if the body contains:
+- `<html`
+- `<p>`
+- `<br`
+
+**Plain Text Example:**
+```
+body: "Hello,\n\nThis is a plain text email.\n\nBest regards"
+```
+
+**HTML Example:**
+```
+body: "<html><body><h1>Hello!</h1><p>This is an HTML email.</p></body></html>"
+```
+
+### Common Use Cases:
+
+**1. Send Invoice:**
+```javascript
+const formData = new FormData();
+formData.append('subject', 'Invoice #12345');
+formData.append('body', '<h2>Invoice</h2><p>Please find attached.</p>');
+formData.append('to', JSON.stringify(['client@example.com']));
+formData.append('cc', JSON.stringify(['accounting@yourcompany.com']));
+formData.append('attachments', invoicePdfFile);
+```
+
+**2. Send Newsletter:**
+```javascript
+const recipients = ['user1@example.com', 'user2@example.com'];
+const formData = new FormData();
+formData.append('subject', 'Monthly Newsletter');
+formData.append('body', newsletterHtmlContent);
+formData.append('to', JSON.stringify(recipients));
+formData.append('bcc', JSON.stringify(['archive@yourcompany.com']));
+```
+
+**3. Send Report with Multiple Attachments:**
+```javascript
+const formData = new FormData();
+formData.append('subject', 'Monthly Sales Report');
+formData.append('body', 'Please find attached the monthly report and charts.');
+formData.append('to', JSON.stringify(['manager@example.com']));
+formData.append('attachments', reportPdf);
+formData.append('attachments', chart1Image);
+formData.append('attachments', chart2Image);
+```
+
+**Action Required:**
+- Implement email sending UI/form
+- Add file upload component
+- Handle multipart/form-data requests
+- Implement JSON.stringify for array fields (to, cc, bcc)
+- Add proper error handling
+- Consider adding email preview functionality
+
+**Documentation:**
+- Full documentation available in `EMAIL_API_DOCUMENTATION.md`
+- Includes examples for cURL, Python, JavaScript, and more
+- Covers all use cases and error scenarios
+
+---
+
+## 3. Agent Sales Endpoints
 
 ### 2.1 List Agent Sales (GET)
 
@@ -227,7 +424,7 @@ This document outlines all the API changes made to the backend. Please review an
 
 ---
 
-## 3. Project Endpoints
+## 4. Project Endpoints
 
 ### 3.1 User Ownership of Projects
 
@@ -361,7 +558,7 @@ Authorization: Bearer <your_jwt_token>
 
 ---
 
-## 4. User-Project Data Isolation
+## 5. User-Project Data Isolation
 
 **MAJOR CHANGE:** All data is now scoped to user projects. Users can only view and manage data related to their own projects.
 
@@ -389,7 +586,7 @@ User
 
 ---
 
-## 5. Plots Endpoints
+## 6. Plots Endpoints
 
 ### 5.1 List Plots (GET)
 
@@ -460,7 +657,7 @@ User
 
 ---
 
-## 6. Bookings Endpoints
+## 7. Bookings Endpoints
 
 ### 6.1 List Bookings (GET)
 
@@ -542,7 +739,7 @@ User
 
 ---
 
-## 7. Project Sales Endpoints
+## 8. Project Sales Endpoints
 
 ### 7.1 List Project Sales (GET)
 
@@ -653,7 +850,7 @@ User
 
 ---
 
-## 8. Breaking Changes Summary
+## 9. Breaking Changes Summary
 
 ### 🔴 CRITICAL - High Priority (Breaking Changes)
 
@@ -699,7 +896,7 @@ User
 
 ---
 
-## 9. Authentication Headers
+## 10. Authentication Headers
 
 **IMPORTANT:** All endpoints now require authentication. You must include the JWT token in headers for ALL requests:
 
@@ -723,7 +920,7 @@ axios.get('/land/create_project/', {
 
 ---
 
-## 10. Migration Checklist
+## 11. Migration Checklist
 
 ### Authentication (CRITICAL)
 - [ ] Add JWT token to ALL API requests (plots, bookings, sales, projects)
@@ -785,7 +982,7 @@ axios.get('/land/create_project/', {
 
 ---
 
-## 11. Testing Recommendations
+## 12. Testing Recommendations
 
 ### 1. Test with Multiple Users (CRITICAL)
 **Scenario:** Verify complete data isolation
@@ -847,7 +1044,7 @@ axios.get('/land/create_project/', {
 
 ---
 
-## 12. Need Help?
+## 13. Need Help?
 
 If you encounter any issues or need clarification on these changes, please reach out with:
 - The endpoint you're working with
@@ -858,10 +1055,11 @@ If you encounter any issues or need clarification on these changes, please reach
 
 ---
 
-## 13. Quick Reference - All Affected Endpoints
+## 14. Quick Reference - All Affected Endpoints
 
 ### Endpoints That Now Require Authentication:
 - ✅ `POST /auth/login/` - Login (use email instead of username)
+- ✅ `POST /auth/send-email/` - Send Email with Attachments (NEW)
 - ✅ `GET/POST /land/create_project/` - Projects
 - ✅ `GET /land/project/{id}/` - Single Project (NEW)
 - ✅ `GET/POST /land/plots/` - Plots
@@ -870,6 +1068,10 @@ If you encounter any issues or need clarification on these changes, please reach
 - ✅ `GET/PATCH/PUT/DELETE /finance/project-sales/{id}/` - Project Sales Detail
 - ✅ `GET/POST /finance/agent-sales/` - Agent Sales List
 - ✅ `GET/PATCH/PUT/DELETE /finance/agent-sales/{id}/` - Agent Sales Detail
+
+### New Endpoints:
+- ✅ `POST /auth/send-email/` - Email sending with attachments (NEW)
+- ✅ `GET /land/project/{id}/` - Get single project (NEW)
 
 ### Data Now Filtered by User:
 All GET endpoints return only the authenticated user's data.
@@ -881,4 +1083,4 @@ All POST/PATCH/PUT endpoints validate that plots belong to the user's projects.
 
 **Last Updated:** 2026-02-01
 **Backend API Version:** Latest
-**Changes:** User-Project data isolation, Email-based authentication, Agent Sales phase handling
+**Changes:** User-Project data isolation, Email-based authentication, Agent Sales phase handling, Email sending with attachments (NEW)

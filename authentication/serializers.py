@@ -151,3 +151,50 @@ class SubscribeSerializer(serializers.Serializer):
         except SubscriptionPlan.DoesNotExist:
             raise serializers.ValidationError("Invalid or inactive subscription plan")
         return value
+
+
+class SendEmailSerializer(serializers.Serializer):
+    """
+    Serializer for sending emails with attachments
+    """
+    subject = serializers.CharField(max_length=255, required=True)
+    body = serializers.CharField(required=True, allow_blank=False)
+    to = serializers.ListField(
+        child=serializers.EmailField(),
+        required=True,
+        allow_empty=False,
+        help_text="List of recipient email addresses"
+    )
+    cc = serializers.ListField(
+        child=serializers.EmailField(),
+        required=False,
+        allow_empty=True,
+        help_text="List of CC email addresses"
+    )
+    bcc = serializers.ListField(
+        child=serializers.EmailField(),
+        required=False,
+        allow_empty=True,
+        help_text="List of BCC email addresses"
+    )
+    # File attachments will be handled separately via request.FILES
+
+    def validate_to(self, value):
+        """Validate that at least one recipient is provided"""
+        if not value or len(value) == 0:
+            raise serializers.ValidationError("At least one recipient email is required")
+        return value
+
+    def validate(self, attrs):
+        """Additional validation for email data"""
+        # Ensure total recipients don't exceed reasonable limit
+        total_recipients = len(attrs.get('to', []))
+        total_recipients += len(attrs.get('cc', []))
+        total_recipients += len(attrs.get('bcc', []))
+
+        if total_recipients > 100:
+            raise serializers.ValidationError(
+                "Total number of recipients (to + cc + bcc) cannot exceed 100"
+            )
+
+        return attrs

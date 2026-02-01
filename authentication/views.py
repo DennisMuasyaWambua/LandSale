@@ -14,7 +14,7 @@ import hashlib
 import uuid
 from .serializers import (UserRegistrationSerializer, UserLoginSerializer, UserSerializer,
                          ForgotPasswordSerializer, ResetPasswordSerializer, SubscriptionPlanSerializer,
-                         UserSubscriptionSerializer, PaymentSerializer, SubscribeSerializer)
+                         UserSubscriptionSerializer, PaymentSerializer, SubscribeSerializer, SendEmailSerializer)
 from .models import PasswordReset, SubscriptionPlan, UserSubscription, Payment
 
 
@@ -635,5 +635,180 @@ def create_admin_user(request):
     except Exception as e:
         return Response({
             'error': 'Failed to create admin user',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ============ EMAIL SENDING ============
+
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'subject': {
+                    'type': 'string',
+                    'description': 'Email subject line',
+                    'example': 'Important Update'
+                },
+                'body': {
+                    'type': 'string',
+                    'description': 'Email body content (can be HTML or plain text)',
+                    'example': 'Dear valued customer, this is an important update...'
+                },
+                'to': {
+                    'type': 'array',
+                    'items': {'type': 'string', 'format': 'email'},
+                    'description': 'List of recipient email addresses',
+                    'example': ['user1@example.com', 'user2@example.com']
+                },
+                'cc': {
+                    'type': 'array',
+                    'items': {'type': 'string', 'format': 'email'},
+                    'description': 'List of CC email addresses (optional)',
+                    'example': ['manager@example.com']
+                },
+                'bcc': {
+                    'type': 'array',
+                    'items': {'type': 'string', 'format': 'email'},
+                    'description': 'List of BCC email addresses (optional)',
+                    'example': ['archive@example.com']
+                },
+                'attachments': {
+                    'type': 'array',
+                    'items': {'type': 'string', 'format': 'binary'},
+                    'description': 'File attachments (optional, multiple files supported)'
+                }
+            },
+            'required': ['subject', 'body', 'to']
+        }
+    },
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'message': {'type': 'string'},
+                'recipients': {
+                    'type': 'object',
+                    'properties': {
+                        'to': {'type': 'array', 'items': {'type': 'string'}},
+                        'cc': {'type': 'array', 'items': {'type': 'string'}},
+                        'bcc': {'type': 'array', 'items': {'type': 'string'}},
+                        'total': {'type': 'integer'}
+                    }
+                },
+                'attachments_count': {'type': 'integer'}
+            }
+        }
+    },
+    description="Send an email with optional CC, BCC, and file attachments. Supports multiple recipients and multiple file uploads.",
+    summary="Send Email"
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_email(request):
+    """
+    Send an email with optional CC, BCC, and file attachments.
+
+    Supports:
+    - Multiple recipients (to, cc, bcc)
+    - Multiple file attachments
+    - HTML or plain text email body
+    - Maximum 100 total recipients
+    - Maximum 10MB per attachment (configurable)
+    """
+    import json
+    from django.core.mail import EmailMessage
+
+    # Parse JSON fields from form data
+    data = {}
+    for key in ['subject', 'body', 'to', 'cc', 'bcc']:
+        value = request.data.get(key)
+        if value:
+            # Handle array fields (to, cc, bcc)
+            if key in ['to', 'cc', 'bcc']:
+                if isinstance(value, str):
+                    try:
+                        data[key] = json.loads(value)
+                    except json.JSONDecodeError:
+                        # If it's a single email as string, convert to list
+                        data[key] = [value]
+                else:
+                    data[key] = value
+            else:
+                data[key] = value
+
+    # Validate the email data
+    serializer = SendEmailSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    validated_data = serializer.validated_data
+
+    # Prepare email
+    subject = validated_data['subject']
+    body = validated_data['body']
+    to_emails = validated_data['to']
+    cc_emails = validated_data.get('cc', [])
+    bcc_emails = validated_data.get('bcc', [])
+
+    # Get FROM email from settings
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com')
+
+    # Create email message
+    try:
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=from_email,
+            to=to_emails,
+            cc=cc_emails,
+            bcc=bcc_emails,
+        )
+
+        # Detect if body contains HTML
+        if '<html' in body.lower() or '<p>' in body.lower() or '<br' in body.lower():
+            email.content_subtype = 'html'
+
+        # Handle file attachments
+        attachments_count = 0
+        max_file_size = 10 * 1024 * 1024  # 10MB
+
+        if request.FILES:
+            for file_key in request.FILES:
+                files = request.FILES.getlist(file_key)
+                for uploaded_file in files:
+                    # Check file size
+                    if uploaded_file.size > max_file_size:
+                        return Response({
+                            'error': f'File "{uploaded_file.name}" exceeds maximum size of 10MB'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Attach file
+                    email.attach(
+                        uploaded_file.name,
+                        uploaded_file.read(),
+                        uploaded_file.content_type
+                    )
+                    attachments_count += 1
+
+        # Send email
+        email.send(fail_silently=False)
+
+        return Response({
+            'message': 'Email sent successfully',
+            'recipients': {
+                'to': to_emails,
+                'cc': cc_emails,
+                'bcc': bcc_emails,
+                'total': len(to_emails) + len(cc_emails) + len(bcc_emails)
+            },
+            'attachments_count': attachments_count,
+            'from': from_email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': 'Failed to send email',
             'detail': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
