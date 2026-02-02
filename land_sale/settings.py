@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'land',
     'authentication',
     'dashboard',
+    'super_admin',  # Super admin system with RBAC
     'drf_spectacular',
     'corsheaders',
 ]
@@ -198,3 +199,16 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # Company branding
 COMPANY_LOGO_URL = os.environ.get('COMPANY_LOGO_URL', '')
+
+# Caching configuration for super admin system
+# Uses local memory cache by default - for production, consider Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'land-sale-cache',
+        'TIMEOUT': 300,  # 5 minutes default timeout
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
