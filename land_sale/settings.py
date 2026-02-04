@@ -120,7 +120,6 @@ WSGI_APPLICATION = 'land_sale.wsgi.application'
 # }
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-print("Database URL:", DATABASE_URL)
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
