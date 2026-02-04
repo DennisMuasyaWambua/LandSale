@@ -1,0 +1,25 @@
+name: land-sale
+region: nyc
+services:
+  - name: web
+    github:
+      branch: main
+      deploy_on_push: true
+    build_command: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    run_command: gunicorn land_sale.wsgi:application --bind 0.0.0.0:8080 --workers 4 --timeout 120
+    envs:
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "${APP_DOMAIN}"
+    health_check:
+      http_path: /health/
+      initial_delay_seconds: 60
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    source_dir: /
