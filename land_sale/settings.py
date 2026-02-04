@@ -120,20 +120,28 @@ WSGI_APPLICATION = 'land_sale.wsgi.application'
 # }
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-if DATABASE_URL and DATABASE_URL.startswith(('postgres://', 'postgresql://', 'mysql://', 'sqlite://')):
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600
-        )
+
+# Default to SQLite
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+}
+
+# Override with DATABASE_URL if valid
+if DATABASE_URL and len(DATABASE_URL) > 10 and DATABASE_URL.startswith(('postgres://', 'postgresql://', 'mysql://', 'sqlite://')):
+    try:
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600
+            )
         }
-    }
+    except Exception as e:
+        # Fall back to SQLite if DATABASE_URL parsing fails
+        print(f"Warning: Failed to parse DATABASE_URL, using SQLite: {e}")
+        pass
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
