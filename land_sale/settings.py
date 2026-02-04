@@ -119,8 +119,8 @@ WSGI_APPLICATION = 'land_sale.wsgi.application'
 #     }
 # }
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL:
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+if DATABASE_URL and DATABASE_URL.startswith(('postgres://', 'postgresql://', 'mysql://', 'sqlite://')):
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
