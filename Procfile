@@ -1,1 +1,1 @@
-web: gunicorn land_sale.wsgi --log-file -
+web: gunicorn land_sale.wsgi --bind 0.0.0.0:8080 --log-file -
