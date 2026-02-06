@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from land.models import ProjectSales, AgentSales
-from land.serializers import ProjectSalesSerializer, AgentSalesSerializer
+from land.serializers import ProjectSalesSerializer, AgentSalesSerializer, AgentSalesUpdateSerializer
 
 
 class ProjectSalesListCreateView(APIView):
@@ -200,9 +200,9 @@ class AgentSalesDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        request=AgentSalesSerializer,
+        request=AgentSalesUpdateSerializer,
         responses={200: AgentSalesSerializer},
-        description="Partially update an agent sales record. The record must belong to one of the user's projects.",
+        description="Partially update an agent sales record. Only sub_agent_name, principal_agent, and commission can be updated.",
         summary="Update Agent Sale (Partial)"
     )
     def patch(self, request, sale_id):
@@ -214,23 +214,18 @@ class AgentSalesDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        serializer = AgentSalesSerializer(agent_sale, data=request.data, partial=True)
+        # Use restricted serializer that only allows specific fields
+        serializer = AgentSalesUpdateSerializer(agent_sale, data=request.data, partial=True)
         if serializer.is_valid():
-            # Validate plot change if provided
-            plot = serializer.validated_data.get('plot')
-            if plot and plot.project.user != request.user:
-                return Response(
-                    {'error': 'You can only assign plots from your own projects'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Return full details using the read serializer
+            return Response(AgentSalesSerializer(agent_sale).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        request=AgentSalesSerializer,
+        request=AgentSalesUpdateSerializer,
         responses={200: AgentSalesSerializer},
-        description="Fully update an agent sales record. The record must belong to one of the user's projects.",
+        description="Update an agent sales record. Only sub_agent_name, principal_agent, and commission can be updated.",
         summary="Update Agent Sale (Full)"
     )
     def put(self, request, sale_id):
@@ -242,17 +237,12 @@ class AgentSalesDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        serializer = AgentSalesSerializer(agent_sale, data=request.data)
+        # Use restricted serializer that only allows specific fields
+        serializer = AgentSalesUpdateSerializer(agent_sale, data=request.data, partial=False)
         if serializer.is_valid():
-            # Validate plot
-            plot = serializer.validated_data.get('plot')
-            if plot and plot.project.user != request.user:
-                return Response(
-                    {'error': 'You can only assign plots from your own projects'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Return full details using the read serializer
+            return Response(AgentSalesSerializer(agent_sale).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(

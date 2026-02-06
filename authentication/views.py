@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db import models
 from drf_spectacular.utils import extend_schema, OpenApiExample
 import requests
 import hashlib
@@ -157,33 +158,42 @@ def forgot_password(request):
     serializer = ForgotPasswordSerializer(data=request.data)
     if serializer.is_valid():
         email = serializer.validated_data['email']
-        user = User.objects.get(email=email)
-        
-        # Create password reset token
-        reset = PasswordReset.objects.create(user=user)
-        
-        # Send email (in production, you would send actual email)
-        # For now, we'll return the token in the response for testing
+
+        # For security, always return success message even if email doesn't exist
         try:
-            reset_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/reset-password?token={reset.token}"
-            
-            send_mail(
-                subject='Password Reset Request',
-                message=f'Click the link below to reset your password:\n{reset_url}\n\nThis link will expire in 1 hour.',
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com'),
-                recipient_list=[email],
-                fail_silently=False,
-            )
-            message = "Password reset email sent successfully"
-        except Exception as e:
-            # If email fails, still return success for security (don't reveal email configuration issues)
-            # But include token for testing purposes
-            message = f"Password reset initiated. Reset token: {reset.token} (for testing - in production this would be emailed)"
-        
+            user = User.objects.get(email=email)
+
+            # Only send email if user exists and is active
+            if user.is_active:
+                # Create password reset token
+                reset = PasswordReset.objects.create(user=user)
+
+                # Send email
+                try:
+                    reset_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/reset-password?token={reset.token}"
+
+                    send_mail(
+                        subject='Password Reset Request',
+                        message=f'Click the link below to reset your password:\n{reset_url}\n\nThis link will expire in 1 hour.',
+                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com'),
+                        recipient_list=[email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    # Log the error but don't expose it to the user
+                    print(f"Email sending failed: {str(e)}")
+                    # In development, you can uncomment below to get the token
+                    # print(f"Reset token for {email}: {reset.token}")
+
+        except User.DoesNotExist:
+            # Don't reveal that user doesn't exist - just silently continue
+            pass
+
+        # Always return success message for security
         return Response({
-            'message': message
+            'message': 'If an account exists with this email, you will receive a password reset link shortly.'
         }, status=status.HTTP_200_OK)
-    
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -219,8 +229,16 @@ def reset_password(request):
         reset.is_used = True
         reset.save()
 
+        # Clean up old expired/used reset tokens for this user (housekeeping)
+        from django.utils import timezone
+        PasswordReset.objects.filter(
+            user=user
+        ).filter(
+            models.Q(is_used=True) | models.Q(expires_at__lt=timezone.now())
+        ).delete()
+
         return Response({
-            'message': 'Password reset successfully'
+            'message': 'Password reset successfully. You can now login with your new password.'
         }, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -200,3 +200,34 @@ class AgentSalesSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Purchase price must be greater than 0.")
         return value
+
+
+class PayInstallmentSerializer(serializers.Serializer):
+    booking_id = serializers.IntegerField()
+    agent_name = serializers.CharField(max_length=200)
+    amount = serializers.DecimalField(max_digits=15, decimal_places=2)
+
+    def validate_booking_id(self, value):
+        if not Booking.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Booking not found.")
+        return value
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be greater than 0.")
+        return value
+
+
+class AgentSalesUpdateSerializer(serializers.ModelSerializer):
+    """
+    Restricted serializer for updating Agent Sales.
+    Only allows updating: sub_agent_name, principal_agent, and commission.
+    """
+    class Meta:
+        model = AgentSales
+        fields = ['sub_agent_name', 'principal_agent', 'commission']
+
+    def validate_commission(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("Commission must be between 0 and 100 percent.")
+        return value
