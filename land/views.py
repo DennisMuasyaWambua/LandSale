@@ -31,7 +31,16 @@ class ProjectView(APIView):
         summary="List User Projects"
     )
     def get(self, request):
-        projects = Project.objects.filter(user=request.user)
+        # Get projects that belong to the user or have no user assigned (legacy data)
+        projects = Project.objects.filter(user=request.user) | Project.objects.filter(user__isnull=True)
+
+        # Assign unassigned projects to the current user
+        unassigned_projects = Project.objects.filter(user__isnull=True)
+        if unassigned_projects.exists():
+            unassigned_projects.update(user=request.user)
+            # Refresh the queryset after update
+            projects = Project.objects.filter(user=request.user)
+
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data, status=200)
 
@@ -47,7 +56,21 @@ class ProjectDetailView(APIView):
     )
     def get(self, request, project_id):
         try:
-            project = Project.objects.get(id=project_id, user=request.user)
+            # Try to get project by ID first
+            project = Project.objects.get(id=project_id)
+
+            # Check if project has no user assigned (legacy data)
+            if project.user is None:
+                # Assign to current user
+                project.user = request.user
+                project.save()
+            # Check if project belongs to the authenticated user
+            elif project.user != request.user:
+                return Response(
+                    {'error': 'Project not found'},
+                    status=404
+                )
+
         except Project.DoesNotExist:
             return Response(
                 {'error': 'Project not found'},

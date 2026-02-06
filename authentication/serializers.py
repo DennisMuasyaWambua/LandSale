@@ -150,9 +150,7 @@ class SubscribeSerializer(serializers.Serializer):
     plan_id = serializers.IntegerField()
 
     def validate_plan_id(self, value):
-        try:
-            plan = SubscriptionPlan.objects.get(id=value, is_active=True)
-        except SubscriptionPlan.DoesNotExist:
+        if not SubscriptionPlan.objects.filter(id=value, is_active=True).exists():
             raise serializers.ValidationError("Invalid or inactive subscription plan")
         return value
 

@@ -1,0 +1,8 @@
+# Alternative Procfile using gunicorn.conf.py
+# Rename this to 'Procfile' to use it
+
+# Run migrations and collect static files before deployment
+release: python3 manage.py migrate --noinput && python3 manage.py collectstatic --noinput
+
+# Start the web server using the gunicorn config file
+web: gunicorn land_sale.wsgi:application -c gunicorn.conf.py
