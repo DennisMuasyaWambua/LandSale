@@ -232,7 +232,7 @@ paths:
   /auth/login/:
     post:
       operationId: auth_login_create
-      description: Login user and get JWT tokens with role information
+      description: Login user with email and get JWT tokens with role information
       tags:
       - auth
       requestBody:
@@ -243,7 +243,7 @@ paths:
             examples:
               UserLoginExample:
                 value:
-                  username: john_doe
+                  email: john@example.com
                   password: secure_password123
                 summary: User Login Example
           application/x-www-form-urlencoded:
@@ -301,7 +301,7 @@ paths:
               examples:
                 UserLoginExample:
                   value:
-                    username: john_doe
+                    email: john@example.com
                     password: secure_password123
                   summary: User Login Example
           description: ''
@@ -529,6 +529,94 @@ paths:
                     password_confirm: new_secure_password123
                   summary: Reset Password Example
           description: ''
+  /auth/send-email/:
+    post:
+      operationId: auth_send_email_create
+      description: Send an email with optional CC, BCC, and file attachments. Supports
+        multiple recipients and multiple file uploads.
+      summary: Send Email
+      tags:
+      - auth
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: Email subject line
+                  example: Important Update
+                body:
+                  type: string
+                  description: Email body content (can be HTML or plain text)
+                  example: Dear valued customer, this is an important update...
+                to:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                  description: List of recipient email addresses
+                  example:
+                  - user1@example.com
+                  - user2@example.com
+                cc:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                  description: List of CC email addresses (optional)
+                  example:
+                  - manager@example.com
+                bcc:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                  description: List of BCC email addresses (optional)
+                  example:
+                  - archive@example.com
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: File attachments (optional, multiple files supported)
+              required:
+              - subject
+              - body
+              - to
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  recipients:
+                    type: object
+                    properties:
+                      to:
+                        type: array
+                        items:
+                          type: string
+                      cc:
+                        type: array
+                        items:
+                          type: string
+                      bcc:
+                        type: array
+                        items:
+                          type: string
+                      total:
+                        type: integer
+                  attachments_count:
+                    type: integer
+          description: ''
   /auth/subscribe/:
     post:
       operationId: auth_subscribe_create
@@ -665,29 +753,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Booking'
           description: ''
-    put:
-      operationId: dashboard_bookings_update
-      description: Fully update booking details by booking ID (all fields required)
-      summary: Update Booking (Full)
-      parameters:
-      - in: path
-        name: booking_id
-        schema:
-          type: integer
-        required: true
+  /dashboard/payinstallment/:
+    post:
+      operationId: dashboard_payinstallment_create
+      description: Make an installment payment on a booked property. Updates booking
+        deposit, project sales, and agent sales tracker.
+      summary: Pay Installment
       tags:
       - dashboard
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookingRequest'
+              $ref: '#/components/schemas/PayInstallmentRequest'
+            examples:
+              PayInstallmentExample:
+                value:
+                  booking_id: 1
+                  agent_name: John Doe
+                  amount: 10000
+                summary: Pay Installment Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BookingRequest'
+              $ref: '#/components/schemas/PayInstallmentRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BookingRequest'
+              $ref: '#/components/schemas/PayInstallmentRequest'
         required: true
       security:
       - jwtAuth: []
@@ -696,40 +787,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
-    patch:
-      operationId: dashboard_bookings_partial_update
-      description: Update booking details by booking ID (partial update - only provided
-        fields will be updated)
-      summary: Update Booking (Partial)
-      parameters:
-      - in: path
-        name: booking_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedBookingRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedBookingRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedBookingRequest'
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
+                type: object
+                properties:
+                  message:
+                    type: string
+                  booking:
+                    type: object
+                  project_sales:
+                    type: object
+                  agent_sales:
+                    type: object
+                  previous_deposit:
+                    type: number
+                  new_deposit:
+                    type: number
+                  balance:
+                    type: number
+              examples:
+                PayInstallmentExample:
+                  value:
+                    booking_id: 1
+                    agent_name: John Doe
+                    amount: 10000
+                  summary: Pay Installment Example
           description: ''
   /dashboard/projects/:
     get:
@@ -771,8 +851,9 @@ paths:
   /finance/agent-sales/:
     get:
       operationId: finance_agent_sales_list
-      description: Get all agent sales records with plot, commission, and agent details
-      summary: List Agent Sales
+      description: Get all agent sales records for the authenticated user's projects
+        with plot, commission, and agent details
+      summary: List User's Agent Sales
       tags:
       - finance
       security:
@@ -788,8 +869,8 @@ paths:
           description: ''
     post:
       operationId: finance_agent_sales_create
-      description: Create a new agent sales record with plot, phase, commission, and
-        agent information
+      description: Create a new agent sales record. The plot must belong to one of
+        the user's projects.
       summary: Create Agent Sale
       tags:
       - finance
@@ -817,7 +898,8 @@ paths:
   /finance/agent-sales/{sale_id}/:
     get:
       operationId: finance_agent_sales_retrieve
-      description: Get a single agent sales record by ID with full details
+      description: Get a single agent sales record by ID. The record must belong to
+        one of the user's projects.
       summary: Get Agent Sale
       parameters:
       - in: path
@@ -838,7 +920,8 @@ paths:
           description: ''
     put:
       operationId: finance_agent_sales_update
-      description: Fully update an agent sales record (all fields required)
+      description: Update an agent sales record. Only sub_agent_name, principal_agent,
+        and commission can be updated.
       summary: Update Agent Sale (Full)
       parameters:
       - in: path
@@ -852,13 +935,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentSalesRequest'
+              $ref: '#/components/schemas/AgentSalesUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AgentSalesRequest'
+              $ref: '#/components/schemas/AgentSalesUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AgentSalesRequest'
+              $ref: '#/components/schemas/AgentSalesUpdateRequest'
         required: true
       security:
       - jwtAuth: []
@@ -871,8 +954,8 @@ paths:
           description: ''
     patch:
       operationId: finance_agent_sales_partial_update
-      description: Partially update an agent sales record (only provided fields will
-        be updated)
+      description: Partially update an agent sales record. Only sub_agent_name, principal_agent,
+        and commission can be updated.
       summary: Update Agent Sale (Partial)
       parameters:
       - in: path
@@ -886,13 +969,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSalesRequest'
+              $ref: '#/components/schemas/PatchedAgentSalesUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSalesRequest'
+              $ref: '#/components/schemas/PatchedAgentSalesUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedAgentSalesRequest'
+              $ref: '#/components/schemas/PatchedAgentSalesUpdateRequest'
       security:
       - jwtAuth: []
       responses:
@@ -904,7 +987,8 @@ paths:
           description: ''
     delete:
       operationId: finance_agent_sales_destroy
-      description: Delete an agent sales record by ID
+      description: Delete an agent sales record. The record must belong to one of
+        the user's projects.
       summary: Delete Agent Sale
       parameters:
       - in: path
@@ -922,8 +1006,9 @@ paths:
   /finance/project-sales/:
     get:
       operationId: finance_project_sales_list
-      description: Get all project sales records with plot and balance details
-      summary: List Project Sales
+      description: Get all project sales records for the authenticated user's projects
+        with plot and balance details
+      summary: List User's Project Sales
       tags:
       - finance
       security:
@@ -939,8 +1024,8 @@ paths:
           description: ''
     post:
       operationId: finance_project_sales_create
-      description: Create a new project sales record with client, plot, phase, purchase
-        price, and deposit
+      description: Create a new project sales record. The plot must belong to one
+        of the user's projects.
       summary: Create Project Sale
       tags:
       - finance
@@ -968,8 +1053,8 @@ paths:
   /finance/project-sales/{sale_id}/:
     get:
       operationId: finance_project_sales_retrieve
-      description: Get a single project sales record by ID with full details and balance
-        calculation
+      description: Get a single project sales record by ID. The record must belong
+        to one of the user's projects.
       summary: Get Project Sale
       parameters:
       - in: path
@@ -990,7 +1075,8 @@ paths:
           description: ''
     put:
       operationId: finance_project_sales_update
-      description: Fully update a project sales record (all fields required)
+      description: Fully update a project sales record. The record must belong to
+        one of the user's projects.
       summary: Update Project Sale (Full)
       parameters:
       - in: path
@@ -1023,8 +1109,8 @@ paths:
           description: ''
     patch:
       operationId: finance_project_sales_partial_update
-      description: Partially update a project sales record (only provided fields will
-        be updated)
+      description: Partially update a project sales record. The record must belong
+        to one of the user's projects.
       summary: Update Project Sale (Partial)
       parameters:
       - in: path
@@ -1056,7 +1142,8 @@ paths:
           description: ''
     delete:
       operationId: finance_project_sales_destroy
-      description: Delete a project sales record by ID
+      description: Delete a project sales record. The record must belong to one of
+        the user's projects.
       summary: Delete Project Sale
       parameters:
       - in: path
@@ -1074,14 +1161,13 @@ paths:
   /land/create_booking/:
     get:
       operationId: land_create_booking_list
-      description: Get all bookings with plot details including phase, balance calculation,
-        and nested project information
-      summary: List All Bookings
+      description: Get all bookings for the authenticated user's projects with plot
+        details including phase, balance calculation, and nested project information
+      summary: List User's Bookings
       tags:
       - land
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -1093,6 +1179,9 @@ paths:
           description: ''
     post:
       operationId: land_create_booking_create
+      description: Create a new booking. The plot must belong to one of the user's
+        projects.
+      summary: Create Booking
       tags:
       - land
       requestBody:
@@ -1109,9 +1198,8 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
@@ -1119,21 +1207,26 @@ paths:
           description: ''
   /land/create_project/:
     get:
-      operationId: land_create_project_retrieve
+      operationId: land_create_project_list
+      description: Get all projects for the authenticated user
+      summary: List User Projects
       tags:
       - land
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
           description: ''
     post:
       operationId: land_create_project_create
+      description: Create a new project for the authenticated user
+      summary: Create Project
       tags:
       - land
       requestBody:
@@ -1150,9 +1243,8 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
@@ -1160,21 +1252,27 @@ paths:
           description: ''
   /land/plots/:
     get:
-      operationId: land_plots_retrieve
+      operationId: land_plots_list
+      description: Get all plots for the authenticated user's projects
+      summary: List User's Plots
       tags:
       - land
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Plots'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plots'
           description: ''
     post:
       operationId: land_plots_create
+      description: Create a new plot. The project must belong to the authenticated
+        user.
+      summary: Create Plot
       tags:
       - land
       requestBody:
@@ -1191,13 +1289,34 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plots'
+          description: ''
+  /land/project/{project_id}/:
+    get:
+      operationId: land_project_retrieve
+      description: Get a single project by ID. Users can only access their own projects.
+      summary: Get Project
+      parameters:
+      - in: path
+        name: project_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - land
+      security:
+      - jwtAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Plots'
+                $ref: '#/components/schemas/Project'
           description: ''
 components:
   schemas:
@@ -1216,9 +1335,6 @@ components:
           format: decimal
           pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
           readOnly: true
-        phase:
-          type: string
-          maxLength: 100
         purchase_price:
           type: string
           format: decimal
@@ -1248,7 +1364,6 @@ components:
       - commission
       - created_at
       - id
-      - phase
       - plot
       - plot_details
       - principal_agent
@@ -1258,10 +1373,6 @@ components:
     AgentSalesRequest:
       type: object
       properties:
-        phase:
-          type: string
-          minLength: 1
-          maxLength: 100
         purchase_price:
           type: string
           format: decimal
@@ -1282,10 +1393,30 @@ components:
           type: integer
       required:
       - commission
-      - phase
       - plot
       - principal_agent
       - purchase_price
+    AgentSalesUpdateRequest:
+      type: object
+      description: |-
+        Restricted serializer for updating Agent Sales.
+        Only allows updating: sub_agent_name, principal_agent, and commission.
+      properties:
+        sub_agent_name:
+          type: string
+          maxLength: 200
+        principal_agent:
+          type: string
+          minLength: 1
+          maxLength: 200
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
+      required:
+      - commission
+      - principal_agent
     BlankEnum:
       enum:
       - ''
@@ -1402,22 +1533,12 @@ components:
     NullEnum:
       enum:
       - null
-    PatchedAgentSalesRequest:
+    PatchedAgentSalesUpdateRequest:
       type: object
+      description: |-
+        Restricted serializer for updating Agent Sales.
+        Only allows updating: sub_agent_name, principal_agent, and commission.
       properties:
-        phase:
-          type: string
-          minLength: 1
-          maxLength: 100
-        purchase_price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        commission:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
-          description: Commission percentage (e.g., 5.00 for 5%)
         sub_agent_name:
           type: string
           maxLength: 200
@@ -1425,37 +1546,11 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-        plot:
-          type: integer
-    PatchedBookingRequest:
-      type: object
-      properties:
-        customer_name:
-          type: string
-          minLength: 1
-          maxLength: 200
-        customer_contact:
-          type: string
-          minLength: 1
-          maxLength: 100
-        payment_reference:
-          type: string
-          minLength: 1
-          maxLength: 100
-        payment_method:
-          $ref: '#/components/schemas/PaymentMethodEnum'
-        purchase_price:
+        commission:
           type: string
           format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        amount_paid:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
-        status:
-          $ref: '#/components/schemas/BookingStatusEnum'
-        plot:
-          type: integer
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Commission percentage (e.g., 5.00 for 5%)
     PatchedProjectSalesRequest:
       type: object
       properties:
@@ -1502,6 +1597,23 @@ components:
           type: boolean
         features:
           description: List of features included in this plan
+    PayInstallmentRequest:
+      type: object
+      properties:
+        booking_id:
+          type: integer
+        agent_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+      required:
+      - agent_name
+      - amount
+      - booking_id
     Payment:
       type: object
       properties:
@@ -1775,6 +1887,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -1782,6 +1898,7 @@ components:
       - name
       - size
       - updated_at
+      - user
     ProjectRequest:
       type: object
       properties:
@@ -2063,15 +2180,16 @@ components:
     UserLoginRequest:
       type: object
       properties:
-        username:
+        email:
           type: string
+          format: email
           minLength: 1
         password:
           type: string
           minLength: 1
       required:
+      - email
       - password
-      - username
     UserRegistrationRequest:
       type: object
       properties:
