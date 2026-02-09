@@ -1319,6 +1319,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
           description: ''
+  /land/project/{project_id}/map/:
+    get:
+      operationId: land_project_map_retrieve
+      description: Get the project map image as a binary blob. The project must belong
+        to the authenticated user.
+      summary: Get Project Map Image
+      parameters:
+      - in: path
+        name: project_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - land
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: Binary image file
+        '404':
+          description: Project not found or no map image available
 components:
   schemas:
     AgentSales:

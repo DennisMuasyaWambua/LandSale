@@ -24,6 +24,7 @@ python3 manage.py collectstatic --noinput
 echo "Starting Gunicorn on port $PORT with $GUNICORN_WORKERS workers..."
 
 # Option 1: Using gunicorn.conf.py (recommended)
+
 exec gunicorn land_sale.wsgi:application -c gunicorn.conf.py
 
 # Option 2: Inline configuration (uncomment to use instead)
