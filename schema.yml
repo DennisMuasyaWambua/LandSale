@@ -1180,7 +1180,8 @@ paths:
     post:
       operationId: land_create_booking_create
       description: Create a new booking. The plot must belong to one of the user's
-        projects.
+        projects. The status defaults to 'booked' if not provided, and the plot's
+        is_available field is automatically set to false.
       summary: Create Booking
       tags:
       - land
@@ -1510,7 +1511,6 @@ components:
       - payment_method
       - payment_reference
       - plot
-      - status
     BookingStatusEnum:
       enum:
       - booked

@@ -91,6 +91,9 @@ class BookingView(APIView):
       )
       def post(self, request):
             data = request.data
+            # Set status to 'booked' if not provided
+            if 'status' not in data:
+                data['status'] = 'booked'
             serializer = BookingSerializer(data=data)
             if serializer.is_valid():
                 # Validate that the plot belongs to user's project
@@ -101,6 +104,9 @@ class BookingView(APIView):
                         status=403
                     )
                 serializer.save()
+                # Set plot as unavailable when booking is created
+                plot.is_available = False
+                plot.save()
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
 
