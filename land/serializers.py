@@ -13,42 +13,29 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Size must be greater than 0.")
         return value
 
-    def to_representation(self, instance):
-        """Customize the output to include absolute URL and metadata for the map file"""
-        representation = super().to_representation(instance)
+    def validate_project_svg_map(self, value):
+        """
+        Validate base64 data URL string.
+        Reject strings larger than ~7MB to prevent database bloat.
+        """
+        if value:
+            # Check if it's a data URL
+            if not value.startswith('data:'):
+                raise serializers.ValidationError(
+                    "Invalid format. Expected a base64 data URL (e.g., data:image/svg+xml;base64,...)"
+                )
 
-        # Customize project_svg_map field to return absolute URL with metadata
-        if instance.project_svg_map:
-            request = self.context.get('request')
-            # Get the file URL
-            file_url = instance.project_svg_map.url
+            # Size limit: ~7MB base64 string (~5MB original file)
+            MAX_SIZE = 7 * 1024 * 1024  # 7MB in bytes
+            size = len(value.encode('utf-8'))
 
-            # Build absolute URL if request is available
-            if request:
-                absolute_url = request.build_absolute_uri(file_url)
-            else:
-                absolute_url = file_url
+            if size > MAX_SIZE:
+                size_mb = size / (1024 * 1024)
+                raise serializers.ValidationError(
+                    f"Base64 string too large ({size_mb:.2f}MB). Maximum allowed is 7MB (~5MB file)."
+                )
 
-            # Get file metadata
-            import os
-            import mimetypes
-            file_name = os.path.basename(instance.project_svg_map.name) if instance.project_svg_map.name else None
-
-            # Determine MIME type
-            mime_type = None
-            if file_name:
-                mime_type, _ = mimetypes.guess_type(file_name)
-
-            representation['project_svg_map'] = {
-                'url': absolute_url,
-                'file_name': file_name,
-                'mime_type': mime_type,
-                'file_type': mime_type.split('/')[-1] if mime_type else None
-            }
-        else:
-            representation['project_svg_map'] = None
-
-        return representation
+        return value
 
 class PlotsSerializer(serializers.ModelSerializer):
     phase = serializers.CharField(required=False, allow_blank=True)

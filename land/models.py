@@ -7,7 +7,7 @@ class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects', null=True, blank=True)
     name = models.CharField(max_length=200)
     phase = ArrayField(models.CharField(max_length=100), blank=True, default=list)
-    project_svg_map = models.FileField(upload_to='project_maps/', null=True, blank=True)
+    project_svg_map = models.TextField(null=True, blank=True, help_text="Base64 encoded image data URL (e.g., data:image/svg+xml;base64,...)")
     location = models.CharField(max_length=300)
     size = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)

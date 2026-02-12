@@ -1,11 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpResponse, FileResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
-import os
-import mimetypes
 
 from land.models import Project, Booking, Plots
 from land.serializers import ProjectSerializer, BookingSerializer, PlotsSerializer
@@ -229,49 +225,3 @@ class PlotsView(APIView):
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
 
-class ProjectMapImageView(APIView):
-      permission_classes = [IsAuthenticated]
-
-      @extend_schema(
-            responses={200: bytes},
-            description="Get the project map image as a binary blob. The project must belong to the authenticated user.",
-            summary="Get Project Map Image"
-      )
-      def get(self, request, project_id):
-            try:
-                # Get project only if it belongs to the authenticated user
-                project = Project.objects.get(id=project_id, user=request.user)
-
-                # Check if project has a map
-                if not project.project_svg_map:
-                    return Response(
-                        {'error': 'Project does not have a map image'},
-                        status=404
-                    )
-
-                # Get the file path
-                file_path = project.project_svg_map.path
-
-                # Determine the content type
-                content_type, _ = mimetypes.guess_type(file_path)
-                if content_type is None:
-                    content_type = 'application/octet-stream'
-
-                # Open and return the file
-                with open(file_path, 'rb') as f:
-                    file_data = f.read()
-
-                response = HttpResponse(file_data, content_type=content_type)
-                response['Content-Disposition'] = f'inline; filename="{os.path.basename(file_path)}"'
-                return response
-
-            except Project.DoesNotExist:
-                return Response(
-                    {'error': 'Project not found'},
-                    status=404
-                )
-            except Exception as e:
-                return Response(
-                    {'error': str(e)},
-                    status=500
-                )
