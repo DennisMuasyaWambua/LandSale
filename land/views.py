@@ -22,7 +22,7 @@ class ProjectView(APIView):
     )
     def post(self, request):
         data = request.data
-        serializer = ProjectSerializer(data=data)
+        serializer = ProjectSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=201)
@@ -34,17 +34,9 @@ class ProjectView(APIView):
         summary="List User Projects"
     )
     def get(self, request):
-        # Get projects that belong to the user or have no user assigned (legacy data)
-        projects = Project.objects.filter(user=request.user) | Project.objects.filter(user__isnull=True)
-
-        # Assign unassigned projects to the current user
-        unassigned_projects = Project.objects.filter(user__isnull=True)
-        if unassigned_projects.exists():
-            unassigned_projects.update(user=request.user)
-            # Refresh the queryset after update
-            projects = Project.objects.filter(user=request.user)
-
-        serializer = ProjectSerializer(projects, many=True)
+        # Get only projects that belong to the authenticated user
+        projects = Project.objects.filter(user=request.user)
+        serializer = ProjectSerializer(projects, many=True, context={'request': request})
         return Response(serializer.data, status=200)
 
 
@@ -59,28 +51,15 @@ class ProjectDetailView(APIView):
     )
     def get(self, request, project_id):
         try:
-            # Try to get project by ID first
-            project = Project.objects.get(id=project_id)
-
-            # Check if project has no user assigned (legacy data)
-            if project.user is None:
-                # Assign to current user
-                project.user = request.user
-                project.save()
-            # Check if project belongs to the authenticated user
-            elif project.user != request.user:
-                return Response(
-                    {'error': 'Project not found'},
-                    status=404
-                )
-
+            # Get project only if it belongs to the authenticated user
+            project = Project.objects.get(id=project_id, user=request.user)
         except Project.DoesNotExist:
             return Response(
                 {'error': 'Project not found'},
                 status=404
             )
 
-        serializer = ProjectSerializer(project)
+        serializer = ProjectSerializer(project, context={'request': request})
         return Response(serializer.data, status=200)
 class BookingView(APIView):
       permission_classes = [IsAuthenticated]
@@ -167,19 +146,8 @@ class ProjectMapImageView(APIView):
       )
       def get(self, request, project_id):
             try:
-                # Get the project
-                project = Project.objects.get(id=project_id)
-
-                # Check if project belongs to the authenticated user
-                if project.user is None:
-                    # Assign to current user if no user assigned
-                    project.user = request.user
-                    project.save()
-                elif project.user != request.user:
-                    return Response(
-                        {'error': 'Project not found'},
-                        status=404
-                    )
+                # Get project only if it belongs to the authenticated user
+                project = Project.objects.get(id=project_id, user=request.user)
 
                 # Check if project has a map
                 if not project.project_svg_map:

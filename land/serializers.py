@@ -13,6 +13,43 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Size must be greater than 0.")
         return value
 
+    def to_representation(self, instance):
+        """Customize the output to include absolute URL and metadata for the map file"""
+        representation = super().to_representation(instance)
+
+        # Customize project_svg_map field to return absolute URL with metadata
+        if instance.project_svg_map:
+            request = self.context.get('request')
+            # Get the file URL
+            file_url = instance.project_svg_map.url
+
+            # Build absolute URL if request is available
+            if request:
+                absolute_url = request.build_absolute_uri(file_url)
+            else:
+                absolute_url = file_url
+
+            # Get file metadata
+            import os
+            import mimetypes
+            file_name = os.path.basename(instance.project_svg_map.name) if instance.project_svg_map.name else None
+
+            # Determine MIME type
+            mime_type = None
+            if file_name:
+                mime_type, _ = mimetypes.guess_type(file_name)
+
+            representation['project_svg_map'] = {
+                'url': absolute_url,
+                'file_name': file_name,
+                'mime_type': mime_type,
+                'file_type': mime_type.split('/')[-1] if mime_type else None
+            }
+        else:
+            representation['project_svg_map'] = None
+
+        return representation
+
 class PlotsSerializer(serializers.ModelSerializer):
     phase = serializers.CharField(required=False, allow_blank=True)
 

@@ -142,43 +142,35 @@ class AdminUserDetailView(APIView):
 # ============ PROJECT MANAGEMENT ============
 
 class AdminProjectListView(APIView):
-    """List all projects in the system"""
+    """List projects for the authenticated user"""
     permission_classes = [IsAdminUser]
 
     @extend_schema(
-        parameters=[
-            OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, description='Filter by user ID'),
-        ],
         responses={200: ProjectSerializer(many=True)},
-        description="Get all projects across all users with optional filtering",
-        summary="List All Projects (Admin)"
+        description="Get all projects for the authenticated user (admin can only see their own projects)",
+        summary="List User Projects (Admin)"
     )
     def get(self, request):
-        projects = Project.objects.select_related('user').all()
-
-        # Optional filter by user
-        user_id = request.query_params.get('user_id')
-        if user_id:
-            projects = projects.filter(user_id=user_id)
-
-        projects = projects.order_by('-created_at')
-        serializer = ProjectSerializer(projects, many=True)
+        # Admins can only see their own projects
+        projects = Project.objects.filter(user=request.user).order_by('-created_at')
+        serializer = ProjectSerializer(projects, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AdminProjectDetailView(APIView):
-    """Get or delete a specific project"""
+    """Get or delete a specific project (user can only access their own projects)"""
     permission_classes = [IsAdminUser]
 
     @extend_schema(
         responses={200: ProjectSerializer},
-        description="Get detailed information about a specific project",
+        description="Get detailed information about a specific project (must be owned by the user)",
         summary="Get Project Details (Admin)"
     )
     def get(self, request, project_id):
         try:
-            project = Project.objects.select_related('user').get(id=project_id)
-            serializer = ProjectSerializer(project)
+            # User can only access their own projects
+            project = Project.objects.get(id=project_id, user=request.user)
+            serializer = ProjectSerializer(project, context={'request': request})
 
             # Add statistics
             project_data = serializer.data
@@ -198,12 +190,13 @@ class AdminProjectDetailView(APIView):
 
     @extend_schema(
         responses={204: None},
-        description="Delete a project and all its related data",
+        description="Delete a project and all its related data (must be owned by the user)",
         summary="Delete Project (Admin)"
     )
     def delete(self, request, project_id):
         try:
-            project = Project.objects.get(id=project_id)
+            # User can only delete their own projects
+            project = Project.objects.get(id=project_id, user=request.user)
             project.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Project.DoesNotExist:
@@ -618,7 +611,7 @@ def admin_search(request):
             },
             'projects': {
                 'count': projects.count(),
-                'items': ProjectSerializer(projects, many=True).data
+                'items': ProjectSerializer(projects, many=True, context={'request': request}).data
             },
             'plots': {
                 'count': plots.count(),
