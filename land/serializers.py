@@ -195,9 +195,11 @@ class AgentSalesSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def to_representation(self, instance):
+        from decimal import Decimal
         representation = super().to_representation(instance)
         # Calculate sub_agent_fee: commission (percent) * purchase_price / 100
-        representation['sub_agent_fee'] = (instance.commission * instance.purchase_price) / 100
+        # Use Decimal to avoid float/Decimal type mismatch
+        representation['sub_agent_fee'] = (instance.commission * instance.purchase_price) / Decimal('100')
         return representation
 
     def validate(self, attrs):

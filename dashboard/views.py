@@ -270,13 +270,14 @@ class PayInstallmentView(APIView):
 
             # Handle AgentSales - check for existing record first
             try:
+                from decimal import Decimal
                 agent_sale, agent_created = AgentSales.objects.update_or_create(
                     plot=booking.plot,
                     principal_agent=agent_name,
                     defaults={
                         'phase': booking.phase or '',
                         'purchase_price': booking.purchase_price,
-                        'commission': 5.00,  # Default commission, can be customized
+                        'commission': Decimal('5.00'),  # Default commission, can be customized
                         'sub_agent_name': ''
                     }
                 )
