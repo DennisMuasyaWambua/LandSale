@@ -119,7 +119,9 @@ class BookingSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         plot = attrs.get('plot')
 
-        if not plot:
+        # Only validate plot if it's being set (for create or update)
+        # For partial updates (PATCH), plot might not be in attrs
+        if 'plot' in attrs and not plot:
             raise serializers.ValidationError({
                 "plot": "Please select a valid plot from the available plots."
             })

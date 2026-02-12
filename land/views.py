@@ -101,6 +101,99 @@ class BookingView(APIView):
             bookings = Booking.objects.filter(plot__project__user=request.user)
             serializer = BookingSerializer(bookings, many=True)
             return Response(serializer.data, status=200)
+
+
+class BookingUpdateView(APIView):
+      permission_classes = [IsAuthenticated]
+      serializer_class = BookingSerializer
+
+      @extend_schema(
+            responses={200: BookingSerializer},
+            description="Get a specific booking by ID. The booking must belong to one of the user's projects.",
+            summary="Get Booking Details"
+      )
+      def get(self, request, booking_id):
+            try:
+                # Get booking only if it belongs to user's projects
+                booking = Booking.objects.filter(plot__project__user=request.user).get(id=booking_id)
+                serializer = BookingSerializer(booking)
+                return Response(serializer.data, status=200)
+            except Booking.DoesNotExist:
+                return Response(
+                    {'error': 'Booking not found'},
+                    status=404
+                )
+
+      @extend_schema(
+            request=BookingSerializer,
+            responses={200: BookingSerializer},
+            description="Update a booking (partial or full). The booking must belong to one of the user's projects.",
+            summary="Update Booking"
+      )
+      def patch(self, request, booking_id):
+            try:
+                # Get booking only if it belongs to user's projects
+                booking = Booking.objects.filter(plot__project__user=request.user).get(id=booking_id)
+            except Booking.DoesNotExist:
+                return Response(
+                    {'error': 'Booking not found'},
+                    status=404
+                )
+
+            # Partial update
+            serializer = BookingSerializer(booking, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=200)
+            return Response(serializer.errors, status=400)
+
+      @extend_schema(
+            request=BookingSerializer,
+            responses={200: BookingSerializer},
+            description="Update a booking (full replacement). The booking must belong to one of the user's projects.",
+            summary="Replace Booking"
+      )
+      def put(self, request, booking_id):
+            try:
+                # Get booking only if it belongs to user's projects
+                booking = Booking.objects.filter(plot__project__user=request.user).get(id=booking_id)
+            except Booking.DoesNotExist:
+                return Response(
+                    {'error': 'Booking not found'},
+                    status=404
+                )
+
+            # Full update
+            serializer = BookingSerializer(booking, data=request.data, partial=False)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=200)
+            return Response(serializer.errors, status=400)
+
+      @extend_schema(
+            responses={204: None},
+            description="Delete a booking. The booking must belong to one of the user's projects.",
+            summary="Delete Booking"
+      )
+      def delete(self, request, booking_id):
+            try:
+                # Get booking only if it belongs to user's projects
+                booking = Booking.objects.filter(plot__project__user=request.user).get(id=booking_id)
+
+                # Set plot back to available when booking is deleted
+                plot = booking.plot
+                plot.is_available = True
+                plot.save()
+
+                booking.delete()
+                return Response(status=204)
+            except Booking.DoesNotExist:
+                return Response(
+                    {'error': 'Booking not found'},
+                    status=404
+                )
+
+
 class PlotsView(APIView):
       permission_classes = [IsAuthenticated]
       serializer_class = PlotsSerializer
