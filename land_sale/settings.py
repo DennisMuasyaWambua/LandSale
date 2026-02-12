@@ -194,6 +194,18 @@ STORAGES = {
     },
 }
 
+# Configure WhiteNoise to serve media files in production
+# This allows Railway to serve uploaded files without needing a separate storage service
+WHITENOISE_AUTOREFRESH = True  # Auto-reload media files in development
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MIMETYPES = {
+    '.svg': 'image/svg+xml',
+    '.pdf': 'application/pdf',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
