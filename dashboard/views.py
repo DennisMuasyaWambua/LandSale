@@ -242,47 +242,78 @@ class PayInstallmentView(APIView):
         # Calculate new balance
         new_balance = booking.purchase_price - booking.amount_paid
 
-        # Update or create ProjectSales record
-        project_sale, created = ProjectSales.objects.get_or_create(
-            plot=booking.plot,
-            client=booking.customer_name,
-            defaults={
-                'phase': booking.phase or '',
-                'purchase_price': booking.purchase_price,
-                'deposit': booking.amount_paid
+        try:
+            # Handle ProjectSales - check for existing record first
+            from django.core.exceptions import MultipleObjectsReturned
+
+            try:
+                project_sale, created = ProjectSales.objects.update_or_create(
+                    plot=booking.plot,
+                    client=booking.customer_name,
+                    defaults={
+                        'phase': booking.phase or '',
+                        'purchase_price': booking.purchase_price,
+                        'deposit': booking.amount_paid
+                    }
+                )
+            except MultipleObjectsReturned:
+                # If multiple records exist, get the first one and update it
+                project_sale = ProjectSales.objects.filter(
+                    plot=booking.plot,
+                    client=booking.customer_name
+                ).first()
+                project_sale.phase = booking.phase or ''
+                project_sale.purchase_price = booking.purchase_price
+                project_sale.deposit = booking.amount_paid
+                project_sale.save()
+                created = False
+
+            # Handle AgentSales - check for existing record first
+            try:
+                agent_sale, agent_created = AgentSales.objects.update_or_create(
+                    plot=booking.plot,
+                    principal_agent=agent_name,
+                    defaults={
+                        'phase': booking.phase or '',
+                        'purchase_price': booking.purchase_price,
+                        'commission': 5.00,  # Default commission, can be customized
+                        'sub_agent_name': ''
+                    }
+                )
+            except MultipleObjectsReturned:
+                # If multiple records exist, get the first one and update it
+                agent_sale = AgentSales.objects.filter(
+                    plot=booking.plot,
+                    principal_agent=agent_name
+                ).first()
+                agent_sale.phase = booking.phase or ''
+                agent_sale.purchase_price = booking.purchase_price
+                agent_sale.save()
+                agent_created = False
+
+            # Prepare response
+            return Response({
+                'message': 'Installment payment processed successfully',
+                'booking': BookingSerializer(booking).data,
+                'project_sales': ProjectSalesSerializer(project_sale).data,
+                'agent_sales': AgentSalesSerializer(agent_sale).data,
+                'previous_deposit': float(previous_deposit),
+                'new_deposit': float(booking.amount_paid),
+                'payment_made': float(payment_amount),
+                'balance': float(new_balance)
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            # Log the error and return a proper error response
+            from django.conf import settings
+            import traceback
+
+            error_response = {
+                'error': 'Failed to process installment payment',
+                'detail': str(e)
             }
-        )
 
-        if not created:
-            # Update existing project sale
-            project_sale.deposit = booking.amount_paid
-            project_sale.save()
+            # Only include traceback in debug mode
+            if settings.DEBUG:
+                error_response['traceback'] = traceback.format_exc()
 
-        # Update or create AgentSales record
-        agent_sale, agent_created = AgentSales.objects.get_or_create(
-            plot=booking.plot,
-            principal_agent=agent_name,
-            defaults={
-                'phase': booking.phase or '',
-                'purchase_price': booking.purchase_price,
-                'commission': 5.00,  # Default commission, can be customized
-                'sub_agent_name': ''
-            }
-        )
-
-        if not agent_created:
-            # Update existing agent sale
-            agent_sale.purchase_price = booking.purchase_price
-            agent_sale.save()
-
-        # Prepare response
-        return Response({
-            'message': 'Installment payment processed successfully',
-            'booking': BookingSerializer(booking).data,
-            'project_sales': ProjectSalesSerializer(project_sale).data,
-            'agent_sales': AgentSalesSerializer(agent_sale).data,
-            'previous_deposit': float(previous_deposit),
-            'new_deposit': float(booking.amount_paid),
-            'payment_made': float(payment_amount),
-            'balance': float(new_balance)
-        }, status=status.HTTP_200_OK)
+            return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
