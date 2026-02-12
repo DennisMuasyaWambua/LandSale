@@ -116,6 +116,72 @@ class DashboardUpdateBookingView(APIView):
         serializer = BookingSerializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        request=BookingSerializer,
+        responses={200: BookingSerializer},
+        description="Partially update a booking. The booking must belong to one of the user's projects.",
+        summary="Update Booking (Partial)"
+    )
+    def patch(self, request, booking_id):
+        try:
+            booking = Booking.objects.filter(plot__project__user=request.user).select_related('plot', 'plot__project').get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Partial update
+        serializer = BookingSerializer(booking, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        request=BookingSerializer,
+        responses={200: BookingSerializer},
+        description="Fully update a booking. The booking must belong to one of the user's projects.",
+        summary="Update Booking (Full)"
+    )
+    def put(self, request, booking_id):
+        try:
+            booking = Booking.objects.filter(plot__project__user=request.user).select_related('plot', 'plot__project').get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Full update
+        serializer = BookingSerializer(booking, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        responses={204: None},
+        description="Delete a booking. The booking must belong to one of the user's projects. Sets the plot back to available.",
+        summary="Delete Booking"
+    )
+    def delete(self, request, booking_id):
+        try:
+            booking = Booking.objects.filter(plot__project__user=request.user).select_related('plot', 'plot__project').get(id=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'Booking not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Set plot back to available when booking is deleted
+        plot = booking.plot
+        plot.is_available = True
+        plot.save()
+
+        booking.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class PayInstallmentView(APIView):
     permission_classes = [IsAuthenticated]
