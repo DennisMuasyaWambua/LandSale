@@ -229,7 +229,8 @@ def process_ipn_notification(order_tracking_id):
         try:
             payment = Payment.objects.get(pesapal_order_tracking_id=order_tracking_id)
 
-            if payment_status == 'Completed' and payment.status != 'successful':
+            # Check for completed payment (case-insensitive)
+            if payment_status.lower() == 'completed' and payment.status != 'successful':
                 # Update payment
                 payment.status = 'successful'
                 payment.pesapal_transaction_id = transaction_data.get('confirmation_code', '')
@@ -262,7 +263,7 @@ def process_ipn_notification(order_tracking_id):
 
                     logger.info(f"Subscription {subscription.id} renewed via recurring payment")
 
-            elif payment_status == 'Failed':
+            elif payment_status.lower() == 'failed':
                 payment.status = 'failed'
                 payment.metadata = transaction_data
                 payment.save()
@@ -288,7 +289,7 @@ def process_ipn_notification(order_tracking_id):
                     subscription = UserSubscription.objects.get(user=user)
 
                     # Create new renewal payment record
-                    if payment_status == 'Completed':
+                    if payment_status.lower() == 'completed':
                         payment = Payment.objects.create(
                             user=user,
                             subscription=subscription,

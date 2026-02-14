@@ -460,7 +460,9 @@ def verify_payment(request, order_tracking_id):
     try:
         transaction_data = pesapal_verify(order_tracking_id)
 
-        if transaction_data['payment_status_description'] == 'Completed':
+        payment_status = transaction_data.get('payment_status_description', '').lower()
+
+        if payment_status == 'completed':
             # Update payment
             payment.status = 'successful'
             payment.pesapal_transaction_id = transaction_data.get('confirmation_code')
@@ -510,17 +512,26 @@ def pesapal_webhook(request):
     Pesapal IPN webhook handler
     Receives: ?OrderTrackingId=xxx&OrderMerchantReference=xxx
     """
+    import logging
+    logger = logging.getLogger('pesapal')
+
     order_tracking_id = request.GET.get('OrderTrackingId')
+    merchant_reference = request.GET.get('OrderMerchantReference')
+
+    logger.info(f"IPN received - OrderTrackingId: {order_tracking_id}, MerchantReference: {merchant_reference}")
 
     if not order_tracking_id:
+        logger.error("IPN missing OrderTrackingId")
         return Response({'error': 'Missing OrderTrackingId'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Process IPN notification
     from .pesapal_service import process_ipn_notification
     try:
         result = process_ipn_notification(order_tracking_id)
+        logger.info(f"IPN processed successfully for {order_tracking_id}: {result}")
         return Response({'status': 'success', 'message': result.get('message', 'Processed')}, status=status.HTTP_200_OK)
     except Exception as e:
+        logger.error(f"IPN processing error for {order_tracking_id}: {str(e)}", exc_info=True)
         return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_200_OK)
 
 
@@ -551,6 +562,50 @@ def cancel_subscription(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_payment_history(request):
+    payments = Payment.objects.filter(user=request.user)
+
+    # Auto-verify pending payments to ensure status is up-to-date
+    from .pesapal_service import verify_payment as pesapal_verify
+    from django.utils import timezone
+    from datetime import timedelta
+
+    for payment in payments:
+        # Only verify pending payments that have an order_tracking_id and are less than 24 hours old
+        if (payment.status == 'pending' and
+            payment.pesapal_order_tracking_id and
+            payment.created_at > timezone.now() - timedelta(hours=24)):
+            try:
+                transaction_data = pesapal_verify(payment.pesapal_order_tracking_id)
+
+                payment_status = transaction_data.get('payment_status_description', '').lower()
+
+                if payment_status == 'completed':
+                    # Update payment
+                    payment.status = 'successful'
+                    payment.pesapal_transaction_id = transaction_data.get('confirmation_code')
+                    payment.payment_method = transaction_data.get('payment_method')
+                    payment.metadata = transaction_data
+                    payment.save()
+
+                    # Activate subscription
+                    subscription = payment.subscription
+                    subscription.activate_subscription()
+
+                    # Mark recurring as active if configured
+                    if payment.is_recurring:
+                        subscription.recurring_payment_active = True
+                        subscription.save()
+
+                elif payment_status == 'failed':
+                    payment.status = 'failed'
+                    payment.metadata = transaction_data
+                    payment.save()
+            except Exception as e:
+                # Log error but continue to return payment history
+                print(f"Error auto-verifying payment {payment.id}: {str(e)}")
+                pass
+
+    # Refresh payments from database to get updated status
     payments = Payment.objects.filter(user=request.user)
     serializer = PaymentSerializer(payments, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
