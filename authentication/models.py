@@ -26,6 +26,31 @@ class PasswordReset(models.Model):
         return f"Password reset for {self.user.username}"
 
 
+class UserProfile(models.Model):
+    """
+    Extended user profile for all user types
+    """
+    USER_TYPE_CHOICES = [
+        ('client', 'Client'),
+        ('subagent', 'Subagent'),
+        ('admin', 'Admin'),
+        ('super_admin', 'Super Admin'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='client')
+    phone_number = models.CharField(max_length=20, blank=True)
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='created_users',
+                                   help_text="Admin who created this user (for subagents)")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_user_type_display()}"
+
+
 class SubscriptionPlan(models.Model):
     PERIOD_CHOICES = [
         ('daily', 'Daily'),

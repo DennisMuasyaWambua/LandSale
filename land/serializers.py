@@ -87,16 +87,31 @@ class PlotDetailSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     balance = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
     plot_details = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         exclude = ['phase']
+        read_only_fields = ['user']  # User is set automatically from request.user
 
     @extend_schema_field(PlotDetailSerializer)
     def get_plot_details(self, instance):
         context = {'booking_phase': instance.phase}
         serializer = PlotDetailSerializer(instance.plot, context=context)
         return serializer.data
+
+    def get_user_details(self, instance):
+        """Return user information for the booking"""
+        if instance.user:
+            return {
+                'id': instance.user.id,
+                'username': instance.user.username,
+                'email': instance.user.email,
+                'full_name': instance.user.get_full_name() or instance.user.username,
+                'user_type': instance.user.profile.user_type if hasattr(instance.user, 'profile') else None,
+                'phone_number': instance.user.profile.phone_number if hasattr(instance.user, 'profile') else None
+            }
+        return None
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

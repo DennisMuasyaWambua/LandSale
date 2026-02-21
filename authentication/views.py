@@ -885,3 +885,114 @@ def send_email(request):
             'error': 'Failed to send email',
             'detail': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'username': {'type': 'string'},
+                'email': {'type': 'string', 'format': 'email'},
+                'first_name': {'type': 'string'},
+                'last_name': {'type': 'string'},
+                'password': {'type': 'string', 'minLength': 8},
+                'phone_number': {'type': 'string'},
+                'project_ids': {'type': 'array', 'items': {'type': 'integer'}},
+            },
+            'required': ['username', 'email', 'password', 'project_ids']
+        }
+    },
+    responses={201: UserSerializer},
+    description="Admin creates a subagent and assigns them to projects",
+    summary="Create Subagent (Admin Only)"
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_subagent(request):
+    """
+    Create a subagent user and assign them to projects.
+    Only admins can create subagents and assign them to their own projects.
+    """
+    # Check user is admin or super_admin
+    if not hasattr(request.user, 'profile') or request.user.profile.user_type not in ['admin', 'super_admin']:
+        return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Extract data
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+    first_name = request.data.get('first_name', '')
+    last_name = request.data.get('last_name', '')
+    phone_number = request.data.get('phone_number', '')
+    project_ids = request.data.get('project_ids', [])
+
+    # Validate required fields
+    if not username or not email or not password:
+        return Response({
+            'error': 'username, email, and password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if not project_ids:
+        return Response({
+            'error': 'At least one project must be assigned'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if username or email already exists
+    if User.objects.filter(username=username).exists():
+        return Response({
+            'error': 'Username already exists'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=email).exists():
+        return Response({
+            'error': 'Email already exists'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate admin owns these projects
+    from land.models import Project, ProjectAssignment
+    projects = Project.objects.filter(id__in=project_ids, user=request.user)
+    if len(projects) != len(project_ids):
+        return Response({
+            'error': 'You can only assign subagents to your own projects'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
+
+        # Create UserProfile
+        from authentication.models import UserProfile
+        UserProfile.objects.create(
+            user=user,
+            user_type='subagent',
+            phone_number=phone_number,
+            assigned_by=request.user
+        )
+
+        # Create project assignments
+        for project in projects:
+            ProjectAssignment.objects.create(
+                user=user,
+                project=project,
+                assigned_by=request.user,
+                assignment_type='book'
+            )
+
+        return Response({
+            'message': 'Subagent created successfully',
+            'user': UserSerializer(user).data,
+            'assigned_projects': [{'id': p.id, 'name': p.name} for p in projects]
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({
+            'error': 'Failed to create subagent',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

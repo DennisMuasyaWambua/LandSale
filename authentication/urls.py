@@ -19,6 +19,7 @@ urlpatterns = [
 
     # Admin user management
     path('admin/create-admin/', views.create_admin_user, name='create_admin_user'),
+    path('admin/create-subagent/', views.create_subagent, name='create_subagent'),
 
     # User subscription endpoints
     path('subscription-plans/', views.list_active_subscription_plans, name='list_active_subscription_plans'),

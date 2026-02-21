@@ -10,6 +10,7 @@ class AdminRole(models.Model):
     """
     ROLE_TYPES = [
         ('super_admin', 'Super Admin'),
+        ('admin', 'Admin'),
         ('content_admin', 'Content Admin'),
         ('finance_admin', 'Finance Admin'),
         ('support_admin', 'Support Admin'),

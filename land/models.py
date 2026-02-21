@@ -13,6 +13,32 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+class ProjectAssignment(models.Model):
+    """
+    Links users (clients/subagents) to projects they can access
+    """
+    ASSIGNMENT_TYPE_CHOICES = [
+        ('view', 'View Only'),
+        ('book', 'Can Make Bookings'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_assignments')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='assignments')
+    assignment_type = models.CharField(max_length=20, choices=ASSIGNMENT_TYPE_CHOICES, default='book')
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                   related_name='assignments_created',
+                                   help_text="Admin who made this assignment")
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'project']
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.user.username} → {self.project.name}"
+
+
 class Plots(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     plot_number = models.CharField(max_length=50)
@@ -26,9 +52,11 @@ class Plots(models.Model):
 
 class Booking(models.Model):
     plot = models.ForeignKey(Plots, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings',
+                            help_text="User (client/subagent/admin) who made this booking")
     phase = models.CharField(max_length=100, blank=True, default='')
-    customer_name = models.CharField(max_length=200)
-    customer_contact = models.CharField(max_length=100)
+    customer_name = models.CharField(max_length=200, blank=True, default='')
+    customer_contact = models.CharField(max_length=100, blank=True, default='')
     booking_date = models.DateTimeField(auto_now_add=True)
     payment_reference = models.CharField(max_length=100)
     payment_method = models.CharField(max_length=100,choices=[('cash','Cash'),('mpesa','mpesa'),('bank_transfer','Bank Transfer')])

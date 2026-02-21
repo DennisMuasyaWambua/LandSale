@@ -7,19 +7,32 @@ from .models import PasswordReset, SubscriptionPlan, UserSubscription, Payment
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
-    
+    phone_number = serializers.CharField(max_length=20, required=False, allow_blank=True)
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password_confirm']
-    
+        fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password_confirm', 'phone_number']
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Password fields didn't match.")
         return attrs
-    
+
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        phone_number = validated_data.pop('phone_number', '')
+
+        # Create user
         user = User.objects.create_user(**validated_data)
+
+        # Create UserProfile with user_type='client' (default for self-registration)
+        from authentication.models import UserProfile
+        UserProfile.objects.create(
+            user=user,
+            user_type='client',
+            phone_number=phone_number
+        )
+
         return user
 
 
@@ -50,19 +63,33 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
+    user_type = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined', 'role']
-        read_only_fields = ['id', 'date_joined', 'role']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined', 'role', 'user_type', 'phone_number']
+        read_only_fields = ['id', 'date_joined', 'role', 'user_type', 'phone_number']
 
     def get_role(self, obj):
+        # Legacy role field - kept for backwards compatibility
         if obj.is_superuser:
             return 'admin'
         elif obj.is_staff:
             return 'staff'
         else:
             return 'user'
+
+    def get_user_type(self, obj):
+        # New user_type field from UserProfile
+        if hasattr(obj, 'profile'):
+            return obj.profile.user_type
+        return None
+
+    def get_phone_number(self, obj):
+        if hasattr(obj, 'profile'):
+            return obj.profile.phone_number
+        return None
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
